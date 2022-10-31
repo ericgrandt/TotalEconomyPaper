@@ -19,7 +19,7 @@ public class EconomyImpl implements Economy {
 
     @Override
     public String getName() {
-        return null;
+        return "Total Economy";
     }
 
     @Override

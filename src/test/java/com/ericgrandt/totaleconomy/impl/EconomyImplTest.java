@@ -1,5 +1,6 @@
 package com.ericgrandt.totaleconomy.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -34,5 +35,19 @@ public class EconomyImplTest {
 
         // Assert
         assertFalse(actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void getName_ShouldReturnName() {
+        // Arrange
+        EconomyImpl sut = new EconomyImpl(true);
+
+        // Act
+        String actual = sut.getName();
+        String expected = "Total Economy";
+
+        // Assert
+        assertEquals(expected, actual);
     }
 }
