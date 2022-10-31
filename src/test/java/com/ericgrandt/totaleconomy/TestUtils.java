@@ -39,6 +39,18 @@ public class TestUtils {
         }
     }
 
+    public static void seedCurrencies() {
+        try (Connection conn = TestUtils.getConnection()) {
+            String insertDollarCurrency = "INSERT INTO te_currency\n"
+                + "VALUES(1, 'Dollar', 'Dollars', '$', 0, true)";
+
+            Statement statement = conn.createStatement();
+            statement.execute(insertDollarCurrency);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void resetDb() {
         try (Connection conn = TestUtils.getConnection()) {
             String deleteUsers = "DELETE FROM te_account";
