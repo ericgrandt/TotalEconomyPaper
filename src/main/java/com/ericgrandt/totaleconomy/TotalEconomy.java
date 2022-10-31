@@ -1,5 +1,6 @@
 package com.ericgrandt.totaleconomy;
 
+import com.ericgrandt.totaleconomy.data.CurrencyData;
 import com.ericgrandt.totaleconomy.data.Database;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import java.util.logging.Logger;
@@ -11,21 +12,22 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class TotalEconomy extends JavaPlugin implements Listener {
     private final FileConfiguration config = getConfig();
-    private final Logger log = Logger.getLogger("Minecraft");
+    private final Logger logger = Logger.getLogger("Minecraft");
 
     @Override
     public void onEnable() {
-        registerVaultIfPresent();
-
         Database database = new Database(
             config.getString("database.url"),
             config.getString("database.user"),
             config.getString("database.password")
         );
+        CurrencyData currencyData = new CurrencyData(database);
+        Economy economy = new EconomyImpl(logger, this.isEnabled(), currencyData);
+
+        registerVaultIfPresent(economy);
     }
 
-    private void registerVaultIfPresent() {
-        Economy economy = new EconomyImpl(this.isEnabled());
+    private void registerVaultIfPresent(Economy economy) {
         if (getServer().getPluginManager().getPlugin("Vault") != null) {
             getServer().getServicesManager().register(
                 Economy.class,
@@ -34,7 +36,7 @@ public class TotalEconomy extends JavaPlugin implements Listener {
                 ServicePriority.Highest
             );
 
-            log.info(String.format(
+            logger.info(String.format(
                 "[%s] Running with Vault dependency",
                 getDescription().getName()
             ));

@@ -1,15 +1,24 @@
 package com.ericgrandt.totaleconomy.impl;
 
+import com.ericgrandt.totaleconomy.data.CurrencyData;
+import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 
 public class EconomyImpl implements Economy {
+    private final Logger logger;
     private final boolean isEnabled;
+    private final CurrencyData currencyData;
 
-    public EconomyImpl(boolean isEnabled) {
+    public EconomyImpl(Logger logger, boolean isEnabled, CurrencyData currencyData) {
+        this.logger = logger;
         this.isEnabled = isEnabled;
+        this.currencyData = currencyData;
     }
 
     @Override
@@ -29,7 +38,17 @@ public class EconomyImpl implements Economy {
 
     @Override
     public int fractionalDigits() {
-        return 0;
+        try {
+            CurrencyDto defaultCurrency = currencyData.getDefaultCurrency();
+            if (defaultCurrency == null) {
+                return 2;
+            }
+
+            return defaultCurrency.getNumFractionDigits();
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error calling getDefaultCurrency", e);
+            return 2;
+        }
     }
 
     @Override
