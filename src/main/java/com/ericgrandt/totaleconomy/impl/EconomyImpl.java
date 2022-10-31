@@ -6,9 +6,15 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 
 public class EconomyImpl implements Economy {
+    private final boolean isEnabled;
+
+    public EconomyImpl(boolean isEnabled) {
+        this.isEnabled = isEnabled;
+    }
+
     @Override
     public boolean isEnabled() {
-        return false;
+        return isEnabled;
     }
 
     @Override
