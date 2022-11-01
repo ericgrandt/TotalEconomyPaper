@@ -157,4 +157,83 @@ public class EconomyImplTest {
             any(SQLException.class)
         );
     }
+
+    @Test
+    @Tag("Unit")
+    public void format_WithDefaultCurrency_ShouldReturnFormattedAmountWithSymbol() throws SQLException {
+        // Arrange
+        CurrencyData currencyDataMock = mock(CurrencyData.class);
+        CurrencyDto defaultCurrency = new CurrencyDto(
+            1,
+            "singular",
+            "plural",
+            "$",
+            1,
+            true
+        );
+        when(currencyDataMock.getDefaultCurrency()).thenReturn(defaultCurrency);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, currencyDataMock);
+
+        // Act
+        String actual = sut.format(123.45);
+        String expected = "$123.45";
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void format_WithNullDefaultCurrency_ShouldReturnFormattedAmountWithoutSymbol() throws SQLException {
+        // Arrange
+        CurrencyData currencyDataMock = mock(CurrencyData.class);
+        when(currencyDataMock.getDefaultCurrency()).thenReturn(null);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, currencyDataMock);
+
+        // Act
+        String actual = sut.format(123.45);
+        String expected = "123.45";
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void format_WithCaughtSqlException_ShouldReturnFormattedAmountWithoutSymbol() throws SQLException {
+        // Arrange
+        CurrencyData currencyDataMock = mock(CurrencyData.class);
+        when(currencyDataMock.getDefaultCurrency()).thenThrow(SQLException.class);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, currencyDataMock);
+
+        // Act
+        String actual = sut.format(123.45);
+        String expected = "123.45";
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void format_WithCaughtSqlException_ShouldLogError() throws SQLException {
+        // Arrange
+        CurrencyData currencyDataMock = mock(CurrencyData.class);
+        when(currencyDataMock.getDefaultCurrency()).thenThrow(SQLException.class);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, currencyDataMock);
+
+        // Act
+        sut.fractionalDigits();
+
+        // Assert
+        verify(loggerMock, times(1)).log(
+            eq(Level.SEVERE),
+            eq("Error calling getDefaultCurrency"),
+            any(SQLException.class)
+        );
+    }
 }

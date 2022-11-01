@@ -53,7 +53,17 @@ public class EconomyImpl implements Economy {
 
     @Override
     public String format(double amount) {
-        return null;
+        try {
+            CurrencyDto defaultCurrency = currencyData.getDefaultCurrency();
+            if (defaultCurrency == null) {
+                return String.valueOf(amount);
+            }
+
+            return String.format("%s%s", defaultCurrency.getSymbol(), amount);
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Error calling getDefaultCurrency", e);
+            return String.valueOf(amount);
+        }
     }
 
     @Override
