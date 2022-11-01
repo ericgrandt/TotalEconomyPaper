@@ -1,24 +1,25 @@
 package com.ericgrandt.totaleconomy.impl;
 
-import com.ericgrandt.totaleconomy.data.CurrencyData;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
-import java.sql.SQLException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 
 public class EconomyImpl implements Economy {
+    private final int defaultFractionDigits = 2;
+
     private final Logger logger;
     private final boolean isEnabled;
-    private final CurrencyData currencyData;
+    private final CurrencyDto defaultCurrency;
 
-    public EconomyImpl(Logger logger, boolean isEnabled, CurrencyData currencyData) {
+    public EconomyImpl(Logger logger, boolean isEnabled, CurrencyDto defaultCurrency) {
         this.logger = logger;
         this.isEnabled = isEnabled;
-        this.currencyData = currencyData;
+        this.defaultCurrency = defaultCurrency;
     }
 
     @Override
@@ -38,32 +39,15 @@ public class EconomyImpl implements Economy {
 
     @Override
     public int fractionalDigits() {
-        try {
-            CurrencyDto defaultCurrency = currencyData.getDefaultCurrency();
-            if (defaultCurrency == null) {
-                return 2;
-            }
-
-            return defaultCurrency.getNumFractionDigits();
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Error calling getDefaultCurrency", e);
-            return 2;
-        }
+        return defaultCurrency.getNumFractionDigits();
     }
 
     @Override
     public String format(double amount) {
-        try {
-            CurrencyDto defaultCurrency = currencyData.getDefaultCurrency();
-            if (defaultCurrency == null) {
-                return String.valueOf(amount);
-            }
+        BigDecimal bigDecimalAmount = BigDecimal.valueOf(amount)
+            .setScale(defaultCurrency.getNumFractionDigits(), RoundingMode.DOWN);
 
-            return String.format("%s%s", defaultCurrency.getSymbol(), amount);
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Error calling getDefaultCurrency", e);
-            return String.valueOf(amount);
-        }
+        return String.format("%s%s", defaultCurrency.getSymbol(), bigDecimalAmount);
     }
 
     @Override

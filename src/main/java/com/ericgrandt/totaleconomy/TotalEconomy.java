@@ -2,7 +2,10 @@ package com.ericgrandt.totaleconomy;
 
 import com.ericgrandt.totaleconomy.data.CurrencyData;
 import com.ericgrandt.totaleconomy.data.Database;
+import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import java.sql.SQLException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -22,7 +25,24 @@ public class TotalEconomy extends JavaPlugin implements Listener {
             config.getString("database.password")
         );
         CurrencyData currencyData = new CurrencyData(database);
-        Economy economy = new EconomyImpl(logger, this.isEnabled(), currencyData);
+        CurrencyDto defaultCurrency;
+
+        try {
+            defaultCurrency = currencyData.getDefaultCurrency();
+        } catch (SQLException e) {
+            logger.log(
+                Level.SEVERE,
+                String.format(
+                    "[%s] Unable to load default currency",
+                    getDescription().getName()
+                ),
+                e
+            );
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        Economy economy = new EconomyImpl(logger, this.isEnabled(), defaultCurrency);
 
         registerVaultIfPresent(economy);
     }
