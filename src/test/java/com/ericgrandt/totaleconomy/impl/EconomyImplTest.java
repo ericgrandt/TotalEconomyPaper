@@ -73,7 +73,7 @@ public class EconomyImplTest {
 
     @Test
     @Tag("Unit")
-    public void fractionalDigits_WithDefaultCurrency_ShouldReturnFractionalDigitsForDefaultCurrency() throws SQLException {
+    public void fractionalDigits_WithDefaultCurrency_ShouldReturnFractionalDigits() throws SQLException {
         // Arrange
         CurrencyDto defaultCurrency = new CurrencyDto(
             1,
@@ -135,6 +135,52 @@ public class EconomyImplTest {
         // Act
         String actual = sut.format(123.45);
         String expected = "$123.4";
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void currencyNamePlural_WithDefaultCurrency_ShouldReturnNamePlural() {
+        // Arrange
+        CurrencyDto defaultCurrency = new CurrencyDto(
+            1,
+            "singular",
+            "plural",
+            "$",
+            1,
+            true
+        );
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency);
+
+        // Act
+        String actual = sut.currencyNamePlural();
+        String expected = "plural";
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void currencyNameSingular_WithDefaultCurrency_ShouldReturnNameSingular() {
+        // Arrange
+        CurrencyDto defaultCurrency = new CurrencyDto(
+            1,
+            "singular",
+            "plural",
+            "$",
+            1,
+            true
+        );
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency);
+
+        // Act
+        String actual = sut.currencyNameSingular();
+        String expected = "singular";
 
         // Assert
         assertEquals(expected, actual);

@@ -10,8 +10,6 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 
 public class EconomyImpl implements Economy {
-    private final int defaultFractionDigits = 2;
-
     private final Logger logger;
     private final boolean isEnabled;
     private final CurrencyDto defaultCurrency;
@@ -52,12 +50,12 @@ public class EconomyImpl implements Economy {
 
     @Override
     public String currencyNamePlural() {
-        return null;
+        return defaultCurrency.getNamePlural();
     }
 
     @Override
     public String currencyNameSingular() {
-        return null;
+        return defaultCurrency.getNameSingular();
     }
 
     @Override
