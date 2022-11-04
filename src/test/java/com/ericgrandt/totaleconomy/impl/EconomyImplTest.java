@@ -202,12 +202,12 @@ public class EconomyImplTest {
     @Tag("Unit")
     public void hasAccount_WithPlayerHavingAnAccount_ShouldReturnTrue() throws SQLException {
         // Arrange
-        UUID playerUuid = UUID.randomUUID();
+        UUID playerUUID = UUID.randomUUID();
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
-        when(playerMock.getUniqueId()).thenReturn(playerUuid);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
 
         AccountData accountDataMock = mock(AccountData.class);
-        when(accountDataMock.getAccount(playerUuid)).thenReturn(mock(AccountDto.class));
+        when(accountDataMock.getAccount(playerUUID)).thenReturn(mock(AccountDto.class));
 
         EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
 
@@ -222,12 +222,12 @@ public class EconomyImplTest {
     @Tag("Unit")
     public void hasAccount_WithPlayerNotHavingAnAccount_ShouldReturnFalse() throws SQLException {
         // Arrange
-        UUID playerUuid = UUID.randomUUID();
+        UUID playerUUID = UUID.randomUUID();
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
-        when(playerMock.getUniqueId()).thenReturn(playerUuid);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
 
         AccountData accountDataMock = mock(AccountData.class);
-        when(accountDataMock.getAccount(playerUuid)).thenReturn(null);
+        when(accountDataMock.getAccount(playerUUID)).thenReturn(null);
 
         EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
 
@@ -242,12 +242,12 @@ public class EconomyImplTest {
     @Tag("Unit")
     public void hasAccount_WithSqlException_ShouldReturnFalse() throws SQLException {
         // Arrange
-        UUID playerUuid = UUID.randomUUID();
+        UUID playerUUID = UUID.randomUUID();
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
-        when(playerMock.getUniqueId()).thenReturn(playerUuid);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
 
         AccountData accountDataMock = mock(AccountData.class);
-        when(accountDataMock.getAccount(playerUuid)).thenThrow(SQLException.class);
+        when(accountDataMock.getAccount(playerUUID)).thenThrow(SQLException.class);
 
         EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
 
@@ -278,6 +278,91 @@ public class EconomyImplTest {
         verify(loggerMock, times(1)).log(
             eq(Level.SEVERE),
             eq(String.format("[Total Economy] Error calling getAccount (accountId: %s)", playerUUID)),
+            any(SQLException.class)
+        );
+    }
+
+    @Test
+    @Tag("Unit")
+    public void createPlayerAccount_WithAReturnValueOfOneFromCreateAccount_ShouldReturnTrue() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+
+        AccountData accountDataMock = mock(AccountData.class);
+        when(accountDataMock.createAccount(playerUUID)).thenReturn(1);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
+
+        // Act
+        boolean actual = sut.createPlayerAccount(playerMock);
+
+        // Assert
+        assertTrue(actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void createPlayerAccount_WithAReturnValueNotEqualToOneFromCreateAccount_ShouldReturnFalse() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+
+        AccountData accountDataMock = mock(AccountData.class);
+        when(accountDataMock.createAccount(playerUUID)).thenReturn(0);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
+
+        // Act
+        boolean actual = sut.createPlayerAccount(playerMock);
+
+        // Assert
+        verify(accountDataMock, times(1)).createAccount(playerUUID);
+        assertFalse(actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void createPlayerAccount_WithSqlException_ShouldReturnFalse() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+
+        AccountData accountDataMock = mock(AccountData.class);
+        when(accountDataMock.createAccount(playerUUID)).thenThrow(SQLException.class);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
+
+        // Act
+        boolean actual = sut.createPlayerAccount(playerMock);
+
+        // Assert
+        assertFalse(actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void createPlayerAccount_WithSqlException_ShouldLogException() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+
+        AccountData accountDataMock = mock(AccountData.class);
+        when(accountDataMock.createAccount(playerUUID)).thenThrow(SQLException.class);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
+
+        // Act
+        sut.createPlayerAccount(playerMock);
+
+        // Assert
+        verify(loggerMock, times(1)).log(
+            eq(Level.SEVERE),
+            eq(String.format("[Total Economy] Error calling createAccount (accountId: %s)", playerUUID)),
             any(SQLException.class)
         );
     }

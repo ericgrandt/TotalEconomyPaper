@@ -86,6 +86,26 @@ public class EconomyImpl implements Economy {
         throw new NotImplementedException("World specific accounts are not yet supported");
     }
 
+    @Override
+    public boolean createPlayerAccount(OfflinePlayer player) {
+        UUID playerUUID = player.getUniqueId();
+
+        try {
+            return accountData.createAccount(playerUUID) == 1;
+        } catch (SQLException e) {
+            logger.log(
+                Level.SEVERE,
+                String.format("[Total Economy] Error calling createAccount (accountId: %s)", playerUUID),
+                e
+            );
+            return false;
+        }
+    }
+
+    @Override
+    public boolean createPlayerAccount(OfflinePlayer player, String worldName) {
+        throw new NotImplementedException("World specific accounts are not yet supported");
+    }
 
     @Override
     public double getBalance(OfflinePlayer player) {
@@ -170,16 +190,6 @@ public class EconomyImpl implements Economy {
     @Override
     public List<String> getBanks() {
         return null;
-    }
-
-    @Override
-    public boolean createPlayerAccount(OfflinePlayer player) {
-        return false;
-    }
-
-    @Override
-    public boolean createPlayerAccount(OfflinePlayer player, String worldName) {
-        throw new NotImplementedException("World specific accounts are not yet supported");
     }
 
     @Override
