@@ -1,5 +1,6 @@
 package com.ericgrandt.totaleconomy;
 
+import com.ericgrandt.totaleconomy.data.AccountData;
 import com.ericgrandt.totaleconomy.data.CurrencyData;
 import com.ericgrandt.totaleconomy.data.Database;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
@@ -32,17 +33,15 @@ public class TotalEconomy extends JavaPlugin implements Listener {
         } catch (SQLException e) {
             logger.log(
                 Level.SEVERE,
-                String.format(
-                    "[%s] Unable to load default currency",
-                    getDescription().getName()
-                ),
+                "[Total Economy] Unable to load default currency",
                 e
             );
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
-        Economy economy = new EconomyImpl(logger, this.isEnabled(), defaultCurrency);
+        AccountData accountData = new AccountData(database);
+        Economy economy = new EconomyImpl(logger, this.isEnabled(), defaultCurrency, accountData);
 
         registerVaultIfPresent(economy);
     }

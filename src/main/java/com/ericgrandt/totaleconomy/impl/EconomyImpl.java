@@ -1,23 +1,30 @@
 package com.ericgrandt.totaleconomy.impl;
 
+import com.ericgrandt.totaleconomy.data.AccountData;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
+import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.OfflinePlayer;
 
 public class EconomyImpl implements Economy {
     private final Logger logger;
     private final boolean isEnabled;
     private final CurrencyDto defaultCurrency;
+    private final AccountData accountData;
 
-    public EconomyImpl(Logger logger, boolean isEnabled, CurrencyDto defaultCurrency) {
+    public EconomyImpl(Logger logger, boolean isEnabled, CurrencyDto defaultCurrency, AccountData accountData) {
         this.logger = logger;
         this.isEnabled = isEnabled;
         this.defaultCurrency = defaultCurrency;
+        this.accountData = accountData;
     }
 
     @Override
@@ -59,29 +66,26 @@ public class EconomyImpl implements Economy {
     }
 
     @Override
-    public boolean hasAccount(String playerName) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean hasAccount(OfflinePlayer player) {
-        return false;
-    }
+        UUID playerUUID = player.getUniqueId();
 
-    @Override
-    public boolean hasAccount(String playerName, String worldName) {
-        throw new UnsupportedOperationException();
+        try {
+            return accountData.getAccount(playerUUID) != null;
+        } catch (SQLException e) {
+            logger.log(
+                Level.SEVERE,
+                String.format("[Total Economy] Error calling getAccount (accountId: %s)", playerUUID),
+                e
+            );
+            return false;
+        }
     }
 
     @Override
     public boolean hasAccount(OfflinePlayer player, String worldName) {
-        return false;
+        throw new NotImplementedException("World specific accounts are not yet supported");
     }
 
-    @Override
-    public double getBalance(String playerName) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public double getBalance(OfflinePlayer player) {
@@ -89,18 +93,8 @@ public class EconomyImpl implements Economy {
     }
 
     @Override
-    public double getBalance(String playerName, String world) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public double getBalance(OfflinePlayer player, String world) {
-        return 0;
-    }
-
-    @Override
-    public boolean has(String playerName, double amount) {
-        throw new UnsupportedOperationException();
+        throw new NotImplementedException("World specific accounts are not yet supported");
     }
 
     @Override
@@ -109,18 +103,8 @@ public class EconomyImpl implements Economy {
     }
 
     @Override
-    public boolean has(String playerName, String worldName, double amount) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean has(OfflinePlayer player, String worldName, double amount) {
-        return false;
-    }
-
-    @Override
-    public EconomyResponse withdrawPlayer(String playerName, double amount) {
-        throw new UnsupportedOperationException();
+        throw new NotImplementedException("World specific accounts are not yet supported");
     }
 
     @Override
@@ -129,18 +113,8 @@ public class EconomyImpl implements Economy {
     }
 
     @Override
-    public EconomyResponse withdrawPlayer(String playerName, String worldName, double amount) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public EconomyResponse withdrawPlayer(OfflinePlayer player, String worldName, double amount) {
-        return null;
-    }
-
-    @Override
-    public EconomyResponse depositPlayer(String playerName, double amount) {
-        throw new UnsupportedOperationException();
+        throw new NotImplementedException("World specific accounts are not yet supported");
     }
 
     @Override
@@ -149,18 +123,8 @@ public class EconomyImpl implements Economy {
     }
 
     @Override
-    public EconomyResponse depositPlayer(String playerName, String worldName, double amount) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public EconomyResponse depositPlayer(OfflinePlayer player, String worldName, double amount) {
-        return null;
-    }
-
-    @Override
-    public EconomyResponse createBank(String name, String player) {
-        throw new UnsupportedOperationException();
+        throw new NotImplementedException("World specific accounts are not yet supported");
     }
 
     @Override
@@ -194,18 +158,8 @@ public class EconomyImpl implements Economy {
     }
 
     @Override
-    public EconomyResponse isBankOwner(String name, String playerName) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public EconomyResponse isBankOwner(String name, OfflinePlayer player) {
         return null;
-    }
-
-    @Override
-    public EconomyResponse isBankMember(String name, String playerName) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -219,22 +173,87 @@ public class EconomyImpl implements Economy {
     }
 
     @Override
-    public boolean createPlayerAccount(String playerName) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean createPlayerAccount(OfflinePlayer player) {
         return false;
     }
 
     @Override
-    public boolean createPlayerAccount(String playerName, String worldName) {
+    public boolean createPlayerAccount(OfflinePlayer player, String worldName) {
+        throw new NotImplementedException("World specific accounts are not yet supported");
+    }
+
+    @Override
+    public boolean hasAccount(String playerName) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean createPlayerAccount(OfflinePlayer player, String worldName) {
-        return false;
+    public boolean hasAccount(String playerName, String worldName) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public double getBalance(String playerName) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public double getBalance(String playerName, String world) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean has(String playerName, double amount) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean has(String playerName, String worldName, double amount) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public EconomyResponse withdrawPlayer(String playerName, double amount) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public EconomyResponse withdrawPlayer(String playerName, String worldName, double amount) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public EconomyResponse depositPlayer(String playerName, double amount) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public EconomyResponse depositPlayer(String playerName, String worldName, double amount) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public EconomyResponse createBank(String name, String player) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public EconomyResponse isBankOwner(String name, String playerName) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public EconomyResponse isBankMember(String name, String playerName) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean createPlayerAccount(String playerName) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean createPlayerAccount(String playerName, String worldName) {
+        throw new UnsupportedOperationException();
     }
 }
