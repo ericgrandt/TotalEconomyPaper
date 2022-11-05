@@ -4,11 +4,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,6 +26,7 @@ import java.util.UUID;
 
 import com.ericgrandt.totaleconomy.TestUtils;
 import com.ericgrandt.totaleconomy.data.dto.AccountDto;
+import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,23 +36,41 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class AccountDataTest {
     @Test
     @Tag("Unit")
-    public void createAccount_WithSuccess_ShouldReturnOne() throws SQLException {
+    public void createAccount_WithSuccess_ShouldReturnTrue() throws SQLException {
         // Arrange
         Database databaseMock = mock(Database.class);
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         when(databaseMock.getConnection()).thenReturn(connectionMock);
-        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
-        when(preparedStatementMock.executeUpdate()).thenReturn(1);
+        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock).thenReturn(preparedStatementMock);
+        when(preparedStatementMock.executeUpdate()).thenReturn(1).thenReturn(1);
 
         AccountData sut = new AccountData(databaseMock);
 
         // Act
-        int actual = sut.createAccount(UUID.randomUUID());
-        int expected = 1;
+        boolean actual = sut.createAccount(UUID.randomUUID(), 1);
 
         // Assert
-        assertEquals(expected, actual);
+        assertTrue(actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void createAccount_WithSqlException_ShouldRollback() throws SQLException {
+        // Arrange
+        Database databaseMock = mock(Database.class);
+        Connection connectionMock = mock(Connection.class);
+        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(connectionMock.prepareStatement(anyString())).thenThrow(SQLException.class);
+
+        AccountData sut = new AccountData(databaseMock);
+
+        // Act/Assert
+        assertThrows(
+            SQLException.class,
+            () -> sut.createAccount(UUID.randomUUID(), 1)
+        );
+        verify(connectionMock, times(1)).rollback();
     }
 
     @Test
@@ -178,10 +203,11 @@ public class AccountDataTest {
 
     @Test
     @Tag("Integration")
-    public void createAccount_ShouldCreateAnAccount() throws SQLException {
+    public void createAccount_WithSuccess_ShouldCreateAnAccountAndBalance() throws SQLException {
         // Arrange
         TestUtils.resetDb();
         TestUtils.seedCurrencies();
+        TestUtils.seedDefaultBalances();
 
         UUID uuid = UUID.randomUUID();
 
@@ -191,18 +217,61 @@ public class AccountDataTest {
         AccountData sut = new AccountData(databaseMock);
 
         // Act
-        sut.createAccount(uuid);
+        sut.createAccount(uuid, 1);
 
-        AccountDto actual = getAccountForId(uuid);
-        AccountDto expected = new AccountDto(
+        AccountDto actualAccount = getAccountForId(uuid);
+        AccountDto expectedAccount = new AccountDto(
             uuid.toString(),
             null
         );
 
+        BalanceDto actualBalance = getBalanceForAccountId(uuid);
+        BalanceDto expectedBalance = new BalanceDto(
+            null,
+            uuid.toString(),
+            1,
+            BigDecimal.valueOf(100.50).setScale(2, RoundingMode.DOWN)
+        );
+
         // Assert
-        assertNotNull(actual);
-        assertEquals(expected.getId(), actual.getId());
-        assertNotNull(actual.getCreated());
+        assertNotNull(actualAccount);
+        assertEquals(expectedAccount.getId(), actualAccount.getId());
+        assertNotNull(actualAccount.getCreated());
+
+        assertNotNull(actualBalance);
+        assertNotNull(actualBalance.getId());
+        assertEquals(expectedBalance.getAccountId(), actualBalance.getAccountId());
+        assertEquals(expectedBalance.getCurrencyId(), actualBalance.getCurrencyId());
+        assertEquals(expectedBalance.getBalance(), actualBalance.getBalance());
+    }
+
+    @Test
+    @Tag("Integration")
+    public void createAccount_WithSqlExceptionOnBalanceInsert_ShouldRollback() throws SQLException {
+        // Arrange
+        TestUtils.resetDb();
+        TestUtils.seedCurrencies();
+        TestUtils.seedDefaultBalances();
+
+        UUID uuid = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
+
+        Database databaseMock = mock(Database.class);
+        Connection connectionSpy = spy(TestUtils.getConnection());
+        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
+        when(databaseMock.getConnection()).thenReturn(connectionSpy);
+        when(connectionSpy.prepareStatement(anyString())).thenCallRealMethod().thenReturn(preparedStatementMock);
+        when(preparedStatementMock.executeUpdate()).thenThrow(SQLException.class);
+
+        AccountData sut = new AccountData(databaseMock);
+
+        // Act/Assert
+        assertThrows(
+            SQLException.class,
+            () -> sut.createAccount(uuid, 1)
+        );
+
+        assertNull(getAccountForId(uuid));
+        assertNull(getBalanceForAccountId(uuid));
     }
 
     @Test
@@ -291,6 +360,29 @@ public class AccountDataTest {
                         return new AccountDto(
                             rs.getString("id"),
                             rs.getTimestamp("created")
+                        );
+                    }
+
+                    return null;
+                }
+            }
+        }
+    }
+
+    private BalanceDto getBalanceForAccountId(UUID accountUUID) throws SQLException {
+        String query = "SELECT * FROM te_balance WHERE account_id = ?";
+
+        try (Connection conn = TestUtils.getConnection()) {
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, accountUUID.toString());
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return new BalanceDto(
+                            rs.getString("id"),
+                            rs.getString("account_id"),
+                            rs.getInt("currency_id"),
+                            rs.getBigDecimal("balance")
                         );
                     }
 

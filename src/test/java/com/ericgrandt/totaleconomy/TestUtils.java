@@ -72,6 +72,18 @@ public class TestUtils {
         }
     }
 
+    public static void seedDefaultBalances() {
+        try (Connection conn = TestUtils.getConnection()) {
+            String insertDefaultBalance1 = "INSERT INTO te_default_balance\n"
+                + "VALUES('05231a59-b6fa-4d57-8450-5bd07f148a98', 1, 100.50);";
+
+            Statement statement = conn.createStatement();
+            statement.execute(insertDefaultBalance1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void resetDb() {
         try (Connection conn = TestUtils.getConnection()) {
             String deleteUsers = "DELETE FROM te_account";

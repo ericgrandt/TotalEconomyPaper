@@ -1,7 +1,6 @@
 package com.ericgrandt.totaleconomy.data;
 
 import com.ericgrandt.totaleconomy.data.dto.AccountDto;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,15 +16,38 @@ public class AccountData {
         this.database = database;
     }
 
-    public int createAccount(UUID accountId) throws SQLException {
+    public boolean createAccount(UUID accountId, int currencyId) throws SQLException {
         String createAccountQuery = "INSERT INTO te_account(id) VALUES (?)";
+        String createBalanceQuery =
+            "INSERT INTO te_balance(account_id, currency_id, balance) " +
+            "SELECT ?, ?, default_balance " +
+            "FROM te_default_balance tdf " +
+            "WHERE tdf.currency_id = ?";
 
-        try (
-            Connection conn = database.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(createAccountQuery)
-        ) {
-            stmt.setString(1, accountId.toString());
-            return stmt.executeUpdate();
+        try (Connection conn = database.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try (
+                PreparedStatement accountStmt = conn.prepareStatement(createAccountQuery);
+                PreparedStatement balanceStmt = conn.prepareStatement(createBalanceQuery)
+            ) {
+                accountStmt.setString(1, accountId.toString());
+                accountStmt.executeUpdate();
+
+                balanceStmt.setString(1, accountId.toString());
+                balanceStmt.setInt(2, currencyId);
+                balanceStmt.setInt(3, currencyId);
+                balanceStmt.executeUpdate();
+
+                conn.commit();
+
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
         }
     }
 

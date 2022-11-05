@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS te_account (
     id VARCHAR(36) PRIMARY KEY,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS te_currency (
@@ -12,15 +12,18 @@ CREATE TABLE IF NOT EXISTS te_currency (
     is_default BOOL NOT NULL
 );
 
+INSERT IGNORE INTO te_currency(id, name_singular, name_plural, symbol, is_default)
+VALUES (1, 'Dollar', 'Dollars', '$', 1);
+
 CREATE TABLE IF NOT EXISTS te_default_balance (
-    id VARCHAR(36) DEFAULT random_uuid() PRIMARY KEY,
+    id VARCHAR(36) PRIMARY KEY DEFAULT (uuid()),
     currency_id INT NOT NULL UNIQUE,
     default_balance DECIMAL(38, 2) NOT NULL DEFAULT 0,
     FOREIGN KEY (currency_id) REFERENCES te_currency(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS te_balance (
-    id VARCHAR(36) DEFAULT random_uuid() PRIMARY KEY,
+    id VARCHAR(36) PRIMARY KEY DEFAULT (uuid()),
     account_id VARCHAR(36) NOT NULL,
     currency_id INT NOT NULL,
     balance DECIMAL(38, 2) NOT NULL DEFAULT 0,

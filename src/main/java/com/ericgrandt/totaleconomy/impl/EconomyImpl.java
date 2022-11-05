@@ -89,13 +89,18 @@ public class EconomyImpl implements Economy {
     @Override
     public boolean createPlayerAccount(OfflinePlayer player) {
         UUID playerUUID = player.getUniqueId();
+        int currencyId = 1;
 
         try {
-            return accountData.createAccount(playerUUID) == 1;
+            return accountData.createAccount(playerUUID, currencyId);
         } catch (SQLException e) {
             logger.log(
                 Level.SEVERE,
-                String.format("[Total Economy] Error calling createAccount (accountId: %s)", playerUUID),
+                String.format(
+                    "[Total Economy] Error calling createAccount (accountId: %s, currencyId: %s)",
+                    playerUUID,
+                    currencyId
+                ),
                 e
             );
             return false;
