@@ -150,7 +150,7 @@ public class EconomyImpl implements Economy {
 
     @Override
     public boolean has(OfflinePlayer player, double amount) {
-        return false;
+        return getBalance(player) >= amount;
     }
 
     @Override

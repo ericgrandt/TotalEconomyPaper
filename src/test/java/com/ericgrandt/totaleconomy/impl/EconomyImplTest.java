@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -417,5 +419,59 @@ public class EconomyImplTest {
             )),
             any(SQLException.class)
         );
+    }
+
+    @Test
+    @Tag("Unit")
+    public void has_WithAmountGreaterThanBalance_ShouldReturnTrue() {
+        // Arrange
+        EconomyImpl sut = spy(
+            new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock)
+        );
+
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        doReturn(100.0).when(sut).getBalance(playerMock);
+
+        // Act
+        boolean actual = sut.has(playerMock, 10);
+
+        // Assert
+        assertTrue(actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void has_WithAmountEqualToBalance_ShouldReturnTrue() {
+        // Arrange
+        EconomyImpl sut = spy(
+            new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock)
+        );
+
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        doReturn(100.0).when(sut).getBalance(playerMock);
+
+        // Act
+        boolean actual = sut.has(playerMock, 100.0);
+
+        // Assert
+        assertTrue(actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void has_WithAmountLessThanBalance_ShouldReturnFalse() {
+        // Arrange
+        EconomyImpl sut = spy(
+            new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock)
+        );
+
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        doReturn(100.0).when(sut).getBalance(playerMock);
+
+        // Act
+        boolean actual = sut.has(playerMock, 105.5);
+
+        // Assert
+        assertFalse(actual);
     }
 }
