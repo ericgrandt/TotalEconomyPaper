@@ -1,6 +1,7 @@
 package com.ericgrandt.totaleconomy;
 
 import com.ericgrandt.totaleconomy.data.AccountData;
+import com.ericgrandt.totaleconomy.data.BalanceData;
 import com.ericgrandt.totaleconomy.data.CurrencyData;
 import com.ericgrandt.totaleconomy.data.Database;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
@@ -41,7 +42,8 @@ public class TotalEconomy extends JavaPlugin implements Listener {
         }
 
         AccountData accountData = new AccountData(database);
-        Economy economy = new EconomyImpl(logger, this.isEnabled(), defaultCurrency, accountData);
+        BalanceData balanceData = new BalanceData(database);
+        Economy economy = new EconomyImpl(logger, this.isEnabled(), defaultCurrency, accountData, balanceData);
 
         registerVaultIfPresent(economy);
     }

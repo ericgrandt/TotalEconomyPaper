@@ -1,6 +1,7 @@
 package com.ericgrandt.totaleconomy.impl;
 
 import com.ericgrandt.totaleconomy.data.AccountData;
+import com.ericgrandt.totaleconomy.data.BalanceData;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,12 +20,20 @@ public class EconomyImpl implements Economy {
     private final boolean isEnabled;
     private final CurrencyDto defaultCurrency;
     private final AccountData accountData;
+    private final BalanceData balanceData;
 
-    public EconomyImpl(Logger logger, boolean isEnabled, CurrencyDto defaultCurrency, AccountData accountData) {
+    public EconomyImpl(
+        Logger logger,
+        boolean isEnabled,
+        CurrencyDto defaultCurrency,
+        AccountData accountData,
+        BalanceData balanceData
+    ) {
         this.logger = logger;
         this.isEnabled = isEnabled;
         this.defaultCurrency = defaultCurrency;
         this.accountData = accountData;
+        this.balanceData = balanceData;
     }
 
     @Override
@@ -114,7 +123,24 @@ public class EconomyImpl implements Economy {
 
     @Override
     public double getBalance(OfflinePlayer player) {
-        return 0;
+        UUID playerUUID = player.getUniqueId();
+        int currencyId = 1;
+
+        try {
+            BigDecimal balance = balanceData.getBalance(playerUUID, currencyId);
+            return balance.doubleValue();
+        } catch (SQLException e) {
+            logger.log(
+                Level.SEVERE,
+                String.format(
+                    "[Total Economy] Error calling getBalance (accountId: %s, currencyId: %s)",
+                    playerUUID,
+                    currencyId
+                ),
+                e
+            );
+            return 0;
+        }
     }
 
     @Override

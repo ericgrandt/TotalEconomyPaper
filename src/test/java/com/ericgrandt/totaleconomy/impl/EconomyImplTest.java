@@ -11,8 +11,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ericgrandt.totaleconomy.data.AccountData;
+import com.ericgrandt.totaleconomy.data.BalanceData;
 import com.ericgrandt.totaleconomy.data.dto.AccountDto;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
+
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -30,11 +33,17 @@ public class EconomyImplTest {
     @Mock
     private Logger loggerMock;
 
+    @Mock
+    private AccountData accountDataMock;
+
+    @Mock
+    private BalanceData balanceDataMock;
+
     @Test
     @Tag("Unit")
     public void isEnabled_WhenTrue_ShouldReturnTrue() {
         // Arrange
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, null);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
 
         // Act
         boolean actual = sut.isEnabled();
@@ -47,7 +56,7 @@ public class EconomyImplTest {
     @Tag("Unit")
     public void isEnabled_WhenFalse_ShouldReturnFalse() {
         // Arrange
-        EconomyImpl sut = new EconomyImpl(loggerMock, false, null, null);
+        EconomyImpl sut = new EconomyImpl(loggerMock, false, null, accountDataMock, balanceDataMock);
 
         // Act
         boolean actual = sut.isEnabled();
@@ -60,7 +69,7 @@ public class EconomyImplTest {
     @Tag("Unit")
     public void getName_ShouldReturnName() {
         // Arrange
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, null);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
 
         // Act
         String actual = sut.getName();
@@ -74,7 +83,7 @@ public class EconomyImplTest {
     @Tag("Unit")
     public void hasBankSupport_ShouldReturnFalse() {
         // Arrange
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, null);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
 
         // Act
         boolean actual = sut.hasBankSupport();
@@ -96,7 +105,7 @@ public class EconomyImplTest {
             true
         );
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency, null);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency, accountDataMock, balanceDataMock);
 
         // Act
         int actual = sut.fractionalDigits();
@@ -119,7 +128,7 @@ public class EconomyImplTest {
             true
         );
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency, null);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency, accountDataMock, balanceDataMock);
 
         // Act
         String actual = sut.format(123.45);
@@ -142,7 +151,7 @@ public class EconomyImplTest {
             true
         );
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency, null);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency, accountDataMock, balanceDataMock);
 
         // Act
         String actual = sut.format(123.45);
@@ -165,7 +174,7 @@ public class EconomyImplTest {
             true
         );
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency, null);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency, accountDataMock, balanceDataMock);
 
         // Act
         String actual = sut.currencyNamePlural();
@@ -188,7 +197,7 @@ public class EconomyImplTest {
             true
         );
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency, null);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, defaultCurrency, accountDataMock, balanceDataMock);
 
         // Act
         String actual = sut.currencyNameSingular();
@@ -206,10 +215,9 @@ public class EconomyImplTest {
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
         when(playerMock.getUniqueId()).thenReturn(playerUUID);
 
-        AccountData accountDataMock = mock(AccountData.class);
         when(accountDataMock.getAccount(playerUUID)).thenReturn(mock(AccountDto.class));
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
 
         // Act
         boolean actual = sut.hasAccount(playerMock);
@@ -226,10 +234,9 @@ public class EconomyImplTest {
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
         when(playerMock.getUniqueId()).thenReturn(playerUUID);
 
-        AccountData accountDataMock = mock(AccountData.class);
         when(accountDataMock.getAccount(playerUUID)).thenReturn(null);
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
 
         // Act
         boolean actual = sut.hasAccount(playerMock);
@@ -246,10 +253,9 @@ public class EconomyImplTest {
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
         when(playerMock.getUniqueId()).thenReturn(playerUUID);
 
-        AccountData accountDataMock = mock(AccountData.class);
         when(accountDataMock.getAccount(playerUUID)).thenThrow(SQLException.class);
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
 
         // Act
         boolean actual = sut.hasAccount(playerMock);
@@ -266,10 +272,9 @@ public class EconomyImplTest {
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
         when(playerMock.getUniqueId()).thenReturn(playerUUID);
 
-        AccountData accountDataMock = mock(AccountData.class);
         when(accountDataMock.getAccount(playerUUID)).thenThrow(SQLException.class);
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
 
         // Act
         sut.hasAccount(playerMock);
@@ -290,10 +295,9 @@ public class EconomyImplTest {
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
         when(playerMock.getUniqueId()).thenReturn(playerUUID);
 
-        AccountData accountDataMock = mock(AccountData.class);
         when(accountDataMock.createAccount(playerUUID, 1)).thenReturn(true);
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
 
         // Act
         boolean actual = sut.createPlayerAccount(playerMock);
@@ -310,10 +314,9 @@ public class EconomyImplTest {
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
         when(playerMock.getUniqueId()).thenReturn(playerUUID);
 
-        AccountData accountDataMock = mock(AccountData.class);
         when(accountDataMock.createAccount(playerUUID, 1)).thenThrow(SQLException.class);
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
 
         // Act
         boolean actual = sut.createPlayerAccount(playerMock);
@@ -330,10 +333,9 @@ public class EconomyImplTest {
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
         when(playerMock.getUniqueId()).thenReturn(playerUUID);
 
-        AccountData accountDataMock = mock(AccountData.class);
         when(accountDataMock.createAccount(playerUUID, 1)).thenThrow(SQLException.class);
 
-        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock);
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
 
         // Act
         sut.createPlayerAccount(playerMock);
@@ -343,6 +345,73 @@ public class EconomyImplTest {
             eq(Level.SEVERE),
             eq(String.format(
                 "[Total Economy] Error calling createAccount (accountId: %s, currencyId: %s)",
+                playerUUID,
+                1
+            )),
+            any(SQLException.class)
+        );
+    }
+
+    @Test
+    @Tag("Unit")
+    public void getBalance_WithBalanceFound_ShouldReturnBalance() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+
+        when(balanceDataMock.getBalance(playerUUID, 1)).thenReturn(BigDecimal.TEN);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
+
+        // Act
+        double actual = sut.getBalance(playerMock);
+        double expected = 10;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void getBalance_WithSqlException_ShouldReturnZero() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+
+        when(balanceDataMock.getBalance(playerUUID, 1)).thenThrow(SQLException.class);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
+
+        // Act
+        double actual = sut.getBalance(playerMock);
+        double expected = 0;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void getBalance_WithSqlException_ShouldLogException() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+
+        when(balanceDataMock.getBalance(playerUUID, 1)).thenThrow(SQLException.class);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
+
+        // Act
+        sut.getBalance(playerMock);
+
+        // Assert
+        verify(loggerMock, times(1)).log(
+            eq(Level.SEVERE),
+            eq(String.format(
+                "[Total Economy] Error calling getBalance (accountId: %s, currencyId: %s)",
                 playerUUID,
                 1
             )),

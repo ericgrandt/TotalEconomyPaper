@@ -23,53 +23,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class BalanceDataTest {
     @Test
     @Tag("Unit")
-    public void getDefaultBalance_WithDefaultBalanceFound_ShouldReturnDefaultBalance() throws SQLException {
-        // Arrange
-        Database databaseMock = mock(Database.class);
-        Connection connectionMock = mock(Connection.class);
-        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
-        ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
-        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
-        when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
-        when(resultSetMock.next()).thenReturn(true);
-        when(resultSetMock.getBigDecimal("default_balance")).thenReturn(BigDecimal.ONE);
-
-        BalanceData sut = new BalanceData(databaseMock);
-
-        // Act
-        BigDecimal actual = sut.getDefaultBalance(1);
-        BigDecimal expected = BigDecimal.ONE;
-
-        // Assert
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    @Tag("Unit")
-    public void getDefaultBalance_WithNoDefaultBalanceFound_ShouldReturnZero() throws SQLException {
-        // Arrange
-        Database databaseMock = mock(Database.class);
-        Connection connectionMock = mock(Connection.class);
-        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
-        ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
-        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
-        when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
-        when(resultSetMock.next()).thenReturn(false);
-
-        BalanceData sut = new BalanceData(databaseMock);
-
-        // Act
-        BigDecimal actual = sut.getDefaultBalance(1);
-        BigDecimal expected = BigDecimal.ZERO;
-
-        // Assert
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    @Tag("Unit")
     public void getBalance_WithBalanceFound_ShouldReturnBalance() throws SQLException {
         // Arrange
         Database databaseMock = mock(Database.class);
@@ -112,27 +65,6 @@ public class BalanceDataTest {
 
         // Assert
         assertNull(actual);
-    }
-
-    @Test
-    @Tag("Integration")
-    public void getDefaultBalance_ShouldReturnDefaultBalance() throws SQLException {
-        // Arrange
-        TestUtils.resetDb();
-        TestUtils.seedCurrencies();
-        TestUtils.seedDefaultBalances();
-
-        Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
-
-        BalanceData sut = new BalanceData(databaseMock);
-
-        // Act
-        BigDecimal actual = sut.getDefaultBalance(1);
-        BigDecimal expected = BigDecimal.valueOf(100.50).setScale(2, RoundingMode.DOWN);
-
-        // Assert
-        assertEquals(expected, actual);
     }
 
     @Test

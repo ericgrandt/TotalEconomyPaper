@@ -14,25 +14,6 @@ public class BalanceData {
         this.database = database;
     }
 
-    public BigDecimal getDefaultBalance(int currencyId) throws SQLException {
-        String getDefaultBalanceQuery = "SELECT default_balance FROM te_default_balance WHERE currency_id = ?";
-
-        try (
-            Connection conn = database.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
-        ) {
-            stmt.setInt(1, currencyId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getBigDecimal("default_balance");
-                }
-            }
-        }
-
-        return BigDecimal.ZERO;
-    }
-
     public BigDecimal getBalance(UUID accountId, int currencyId) throws SQLException {
         String getDefaultBalanceQuery = "SELECT balance FROM te_balance WHERE account_id = ? AND currency_id = ?";
 

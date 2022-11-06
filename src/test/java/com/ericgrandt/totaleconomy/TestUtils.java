@@ -39,19 +39,17 @@ public class TestUtils {
         }
     }
 
-    public static void seedCurrencies() {
+    public static void seedCurrencies() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
             String insertDollarCurrency = "INSERT INTO te_currency\n"
                 + "VALUES(1, 'Dollar', 'Dollars', '$', 0, true)";
 
             Statement statement = conn.createStatement();
             statement.execute(insertDollarCurrency);
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
-    public static void seedAccounts() {
+    public static void seedAccounts() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
             String insertAccount = "INSERT INTO te_account\n"
                 + "VALUES('62694fb0-07cc-4396-8d63-4f70646d75f0', '2022-01-01 00:00:00');";
@@ -67,31 +65,31 @@ public class TestUtils {
             statement.execute(insertBalance);
             statement.execute(insertAccount2);
             statement.execute(insertBalance2);
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
-    public static void seedDefaultBalances() {
+    public static void seedDefaultBalances() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
             String insertDefaultBalance1 = "INSERT INTO te_default_balance\n"
                 + "VALUES('05231a59-b6fa-4d57-8450-5bd07f148a98', 1, 100.50);";
 
             Statement statement = conn.createStatement();
             statement.execute(insertDefaultBalance1);
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
-    public static void resetDb() {
+    public static void resetDb() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
+            String deleteCurrencies = "DELETE FROM te_currency";
             String deleteUsers = "DELETE FROM te_account";
+            String deleteBalances = "DELETE FROM te_balance";
+            String deleteDefaultBalances = "DELETE FROM te_default_balance";
 
             Statement statement = conn.createStatement();
+            statement.execute(deleteCurrencies);
             statement.execute(deleteUsers);
-        } catch (SQLException e) {
-            e.printStackTrace();
+            statement.execute(deleteBalances);
+            statement.execute(deleteDefaultBalances);
         }
     }
 }
