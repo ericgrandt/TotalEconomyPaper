@@ -18,11 +18,10 @@ public class AccountData {
 
     public boolean createAccount(UUID accountId, int currencyId) throws SQLException {
         String createAccountQuery = "INSERT INTO te_account(id) VALUES (?)";
-        String createBalanceQuery =
-            "INSERT INTO te_balance(account_id, currency_id, balance) " +
-            "SELECT ?, ?, default_balance " +
-            "FROM te_default_balance tdf " +
-            "WHERE tdf.currency_id = ?";
+        String createBalanceQuery = "INSERT INTO te_balance(account_id, currency_id, balance) "
+            + "SELECT ?, ?, default_balance "
+            + "FROM te_default_balance tdf "
+            + "WHERE tdf.currency_id = ?";
 
         try (Connection conn = database.getConnection()) {
             conn.setAutoCommit(false);

@@ -218,11 +218,15 @@ public class AccountDataTest {
         // Act
         sut.createAccount(uuid, 1);
 
+        // Assert
         AccountDto actualAccount = getAccountForId(uuid);
         AccountDto expectedAccount = new AccountDto(
             uuid.toString(),
             null
         );
+        assertNotNull(actualAccount);
+        assertEquals(expectedAccount.getId(), actualAccount.getId());
+        assertNotNull(actualAccount.getCreated());
 
         BalanceDto actualBalance = TestUtils.getBalanceForAccountId(uuid, 1);
         BalanceDto expectedBalance = new BalanceDto(
@@ -231,12 +235,6 @@ public class AccountDataTest {
             1,
             BigDecimal.valueOf(100.50).setScale(2, RoundingMode.DOWN)
         );
-
-        // Assert
-        assertNotNull(actualAccount);
-        assertEquals(expectedAccount.getId(), actualAccount.getId());
-        assertNotNull(actualAccount.getCreated());
-
         assertNotNull(actualBalance);
         assertNotNull(actualBalance.getId());
         assertEquals(expectedBalance.getAccountId(), actualBalance.getAccountId());
@@ -252,8 +250,6 @@ public class AccountDataTest {
         TestUtils.seedCurrencies();
         TestUtils.seedDefaultBalances();
 
-        UUID uuid = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
-
         Database databaseMock = mock(Database.class);
         Connection connectionSpy = spy(TestUtils.getConnection());
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
@@ -262,6 +258,8 @@ public class AccountDataTest {
         when(preparedStatementMock.executeUpdate()).thenThrow(SQLException.class);
 
         AccountData sut = new AccountData(databaseMock);
+
+        UUID uuid = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
 
         // Act/Assert
         assertThrows(
