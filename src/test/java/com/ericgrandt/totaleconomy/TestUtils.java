@@ -1,12 +1,17 @@
 package com.ericgrandt.totaleconomy;
 
+import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.UUID;
+
 import org.apache.ibatis.jdbc.ScriptRunner;
 
 public class TestUtils {
@@ -90,6 +95,30 @@ public class TestUtils {
             statement.execute(deleteUsers);
             statement.execute(deleteBalances);
             statement.execute(deleteDefaultBalances);
+        }
+    }
+
+    public static BalanceDto getBalanceForAccountId(UUID accountUUID, int currencyId) throws SQLException {
+        String query = "SELECT * FROM te_balance WHERE account_id = ? AND currency_id = ?";
+
+        try (Connection conn = TestUtils.getConnection()) {
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, accountUUID.toString());
+                stmt.setInt(2, currencyId);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return new BalanceDto(
+                            rs.getString("id"),
+                            rs.getString("account_id"),
+                            rs.getInt("currency_id"),
+                            rs.getBigDecimal("balance")
+                        );
+                    }
+
+                    return null;
+                }
+            }
         }
     }
 }

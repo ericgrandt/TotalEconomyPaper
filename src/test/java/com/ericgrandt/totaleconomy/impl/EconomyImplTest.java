@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -376,7 +377,27 @@ public class EconomyImplTest {
 
     @Test
     @Tag("Unit")
-    public void getBalance_WithSqlException_ShouldReturnZero() throws SQLException {
+    public void getBalance_WithNullValue_ShouldReturnZero() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+
+        when(balanceDataMock.getBalance(playerUUID, 1)).thenReturn(null);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
+
+        // Act
+        double actual = sut.getBalance(playerMock);
+        double expected = 0;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void getBalance_WithNullBalance_ShouldReturnZero() throws SQLException {
         // Arrange
         UUID playerUUID = UUID.randomUUID();
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
@@ -473,5 +494,142 @@ public class EconomyImplTest {
 
         // Assert
         assertFalse(actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void withdrawPlayer_WithSuccessfulWithdraw_ShouldReturnCorrectEconomyResponse() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+        when(balanceDataMock.getBalance(playerUUID, 1)).thenReturn(BigDecimal.valueOf(100));
+        when(balanceDataMock.updateBalance(playerUUID, 1, 90)).thenReturn(1);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
+
+        // Act
+        EconomyResponse actual = sut.withdrawPlayer(playerMock, 10);
+        EconomyResponse expected = new EconomyResponse(
+            10,
+            90,
+            EconomyResponse.ResponseType.SUCCESS,
+            null
+        );
+
+        // Assert
+        assertEquals(expected.amount, actual.amount);
+        assertEquals(expected.balance, actual.balance);
+        assertEquals(expected.type, actual.type);
+        assertEquals(expected.errorMessage, actual.errorMessage);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void withdrawPlayer_WithNullBalance_ShouldReturnCorrectEconomyResponse() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+        when(balanceDataMock.getBalance(playerUUID, 1)).thenReturn(null);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
+
+        // Act
+        EconomyResponse actual = sut.withdrawPlayer(playerMock, 10);
+        EconomyResponse expected = new EconomyResponse(
+            10,
+            0,
+            EconomyResponse.ResponseType.FAILURE,
+            "No balance found for user"
+        );
+
+        // Assert
+        assertEquals(expected.amount, actual.amount);
+        assertEquals(expected.balance, actual.balance);
+        assertEquals(expected.type, actual.type);
+        assertEquals(expected.errorMessage, actual.errorMessage);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void withdrawPlayer_WithSqlExceptionFromGetBalance_ShouldLogException() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+        when(balanceDataMock.getBalance(playerUUID, 1)).thenThrow(SQLException.class);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
+
+        // Act
+        sut.withdrawPlayer(playerMock, 10);
+
+        // Assert
+        verify(loggerMock, times(1)).log(
+            eq(Level.SEVERE),
+            eq(String.format(
+                "[Total Economy] Error calling getBalance (accountId: %s, currencyId: %s)",
+                playerUUID,
+                1
+            )),
+            any(SQLException.class)
+        );
+    }
+
+    @Test
+    @Tag("Unit")
+    public void withdrawPlayer_WithFalseResultFromUpdateBalance_ShouldReturnCorrectEconomyResponse() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+        when(balanceDataMock.getBalance(playerUUID, 1)).thenReturn(BigDecimal.valueOf(100));
+        when(balanceDataMock.updateBalance(playerUUID, 1, 90)).thenThrow(SQLException.class);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
+
+        // Act
+        EconomyResponse actual = sut.withdrawPlayer(playerMock, 10);
+        EconomyResponse expected = new EconomyResponse(
+            10,
+            100,
+            EconomyResponse.ResponseType.FAILURE,
+            "Error updating balance"
+        );
+
+        // Assert
+        assertEquals(expected.amount, actual.amount);
+        assertEquals(expected.balance, actual.balance);
+        assertEquals(expected.type, actual.type);
+        assertEquals(expected.errorMessage, actual.errorMessage);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void withdrawPlayer_WithSqlExceptionFromUpdateBalance_ShouldLogException() throws SQLException {
+        // Arrange
+        UUID playerUUID = UUID.randomUUID();
+        OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+        when(balanceDataMock.getBalance(playerUUID, 1)).thenReturn(BigDecimal.valueOf(100));
+        when(balanceDataMock.updateBalance(playerUUID, 1, 90)).thenThrow(SQLException.class);
+
+        EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
+
+        // Act
+        sut.withdrawPlayer(playerMock, 10);
+
+        // Assert
+        verify(loggerMock, times(1)).log(
+            eq(Level.SEVERE),
+            eq(String.format(
+                "[Total Economy] Error calling updateBalance (accountId: %s, currencyId: %s, balance: %s)",
+                playerUUID,
+                1,
+                90.0
+            )),
+            any(SQLException.class)
+        );
     }
 }

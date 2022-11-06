@@ -13,6 +13,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ericgrandt.totaleconomy.TestUtils;
+import com.ericgrandt.totaleconomy.data.dto.AccountDto;
+import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
@@ -23,10 +26,6 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-
-import com.ericgrandt.totaleconomy.TestUtils;
-import com.ericgrandt.totaleconomy.data.dto.AccountDto;
-import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -225,7 +224,7 @@ public class AccountDataTest {
             null
         );
 
-        BalanceDto actualBalance = getBalanceForAccountId(uuid);
+        BalanceDto actualBalance = TestUtils.getBalanceForAccountId(uuid, 1);
         BalanceDto expectedBalance = new BalanceDto(
             null,
             uuid.toString(),
@@ -271,7 +270,7 @@ public class AccountDataTest {
         );
 
         assertNull(getAccountForId(uuid));
-        assertNull(getBalanceForAccountId(uuid));
+        assertNull(TestUtils.getBalanceForAccountId(uuid, 1));
     }
 
     @Test
@@ -360,29 +359,6 @@ public class AccountDataTest {
                         return new AccountDto(
                             rs.getString("id"),
                             rs.getTimestamp("created")
-                        );
-                    }
-
-                    return null;
-                }
-            }
-        }
-    }
-
-    private BalanceDto getBalanceForAccountId(UUID accountUUID) throws SQLException {
-        String query = "SELECT * FROM te_balance WHERE account_id = ?";
-
-        try (Connection conn = TestUtils.getConnection()) {
-            try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                stmt.setString(1, accountUUID.toString());
-
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        return new BalanceDto(
-                            rs.getString("id"),
-                            rs.getString("account_id"),
-                            rs.getInt("currency_id"),
-                            rs.getBigDecimal("balance")
                         );
                     }
 

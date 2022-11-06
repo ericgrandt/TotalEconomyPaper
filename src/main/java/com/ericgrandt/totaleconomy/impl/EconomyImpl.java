@@ -126,21 +126,12 @@ public class EconomyImpl implements Economy {
         UUID playerUUID = player.getUniqueId();
         int currencyId = 1;
 
-        try {
-            BigDecimal balance = balanceData.getBalance(playerUUID, currencyId);
-            return balance.doubleValue();
-        } catch (SQLException e) {
-            logger.log(
-                Level.SEVERE,
-                String.format(
-                    "[Total Economy] Error calling getBalance (accountId: %s, currencyId: %s)",
-                    playerUUID,
-                    currencyId
-                ),
-                e
-            );
+        BigDecimal balance = getBigDecimalBalance(playerUUID, currencyId);
+        if (balance == null) {
             return 0;
         }
+
+        return balance.doubleValue();
     }
 
     @Override
@@ -160,7 +151,35 @@ public class EconomyImpl implements Economy {
 
     @Override
     public EconomyResponse withdrawPlayer(OfflinePlayer player, double amount) {
-        return null;
+        UUID playerUUID = player.getUniqueId();
+        int currencyId = 1;
+
+        BigDecimal currentBalance = getBigDecimalBalance(playerUUID, currencyId);
+        if (currentBalance == null) {
+            return new EconomyResponse(
+                amount,
+                0,
+                EconomyResponse.ResponseType.FAILURE,
+                "No balance found for user"
+            );
+        }
+
+        double newBalance = currentBalance.doubleValue() - amount;
+        if (!updateBalance(playerUUID, currencyId, newBalance)) {
+            return new EconomyResponse(
+                amount,
+                currentBalance.doubleValue(),
+                EconomyResponse.ResponseType.FAILURE,
+                "Error updating balance"
+            );
+        }
+
+        return new EconomyResponse(
+            amount,
+            newBalance,
+            EconomyResponse.ResponseType.SUCCESS,
+            null
+        );
     }
 
     @Override
@@ -296,5 +315,41 @@ public class EconomyImpl implements Economy {
     @Override
     public boolean createPlayerAccount(String playerName, String worldName) {
         throw new UnsupportedOperationException();
+    }
+
+    private BigDecimal getBigDecimalBalance(UUID playerUUID, int currencyId) {
+        try {
+            return balanceData.getBalance(playerUUID, currencyId);
+        } catch (SQLException e) {
+            logger.log(
+                Level.SEVERE,
+                String.format(
+                    "[Total Economy] Error calling getBalance (accountId: %s, currencyId: %s)",
+                    playerUUID,
+                    currencyId
+                ),
+                e
+            );
+            return null;
+        }
+    }
+
+    private boolean updateBalance(UUID playerUUID, int currencyId, double newBalance) {
+        try {
+            balanceData.updateBalance(playerUUID, currencyId, newBalance);
+            return true;
+        } catch (SQLException e) {
+            logger.log(
+                Level.SEVERE,
+                String.format(
+                    "[Total Economy] Error calling updateBalance (accountId: %s, currencyId: %s, balance: %s)",
+                    playerUUID,
+                    currencyId,
+                    newBalance
+                ),
+                e
+            );
+            return false;
+        }
     }
 }

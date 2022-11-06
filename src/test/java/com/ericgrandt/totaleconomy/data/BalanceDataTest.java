@@ -1,7 +1,9 @@
 package com.ericgrandt.totaleconomy.data;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -14,6 +16,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
+
+import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,6 +72,48 @@ public class BalanceDataTest {
     }
 
     @Test
+    @Tag("Unit")
+    public void update_WithBalanceUpdated_ShouldReturnTrue() throws SQLException {
+        // Arrange
+        Database databaseMock = mock(Database.class);
+        Connection connectionMock = mock(Connection.class);
+        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
+        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
+        when(preparedStatementMock.executeUpdate()).thenReturn(1);
+
+        BalanceData sut = new BalanceData(databaseMock);
+
+        // Act
+        int actual = sut.updateBalance(UUID.randomUUID(), 1, 100);
+        int expected = 1;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void update_WithNoBalanceUpdated_ShouldReturnZero() throws SQLException {
+        // Arrange
+        Database databaseMock = mock(Database.class);
+        Connection connectionMock = mock(Connection.class);
+        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
+        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
+        when(preparedStatementMock.executeUpdate()).thenReturn(0);
+
+        BalanceData sut = new BalanceData(databaseMock);
+
+        // Act
+        int actual = sut.updateBalance(UUID.randomUUID(), 1, 100);
+        int expected = 0;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
     @Tag("Integration")
     public void getBalance_ShouldReturnBalance() throws SQLException {
         // Arrange
@@ -89,5 +135,33 @@ public class BalanceDataTest {
 
         // Assert
         assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Integration")
+    public void updateBalance_ShouldUpdateBalance() throws SQLException {
+        // Arrange
+        TestUtils.resetDb();
+        TestUtils.seedCurrencies();
+        TestUtils.seedAccounts();
+
+        UUID accountId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
+        int currencyId = 1;
+
+        Database databaseMock = mock(Database.class);
+        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+
+        BalanceData sut = new BalanceData(databaseMock);
+
+        // Act
+        int actual = sut.updateBalance(accountId, currencyId, 100);
+        int expected = 1;
+
+        BalanceDto actualBalanceDto = TestUtils.getBalanceForAccountId(accountId, currencyId);
+
+        // Assert
+        assertEquals(expected, actual);
+        assertNotNull(actualBalanceDto);
+        assertEquals(BigDecimal.valueOf(100).setScale(2, RoundingMode.DOWN), actualBalanceDto.getBalance());
     }
 }
