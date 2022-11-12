@@ -250,6 +250,7 @@ public class CurrencyDtoTest {
         assertFalse(actual);
     }
 
+    @Test
     @Tag("Unit")
     public void equals_WithDifferentNumFractionDigits_ShouldReturnFalse() {
         // Arrange

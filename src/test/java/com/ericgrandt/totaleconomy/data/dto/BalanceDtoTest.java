@@ -262,4 +262,29 @@ public class BalanceDtoTest {
         // Assert
         assertFalse(actual);
     }
+
+    @Test
+    @Tag("Unit")
+    public void hashCode_WithSameObjects_ShouldReturnSameHashCode() {
+        // Arrange
+        BalanceDto sut1 = new BalanceDto(
+            "id",
+            "account-id",
+            1,
+            BigDecimal.ONE
+        );
+        BalanceDto sut2 = new BalanceDto(
+            "id",
+            "account-id",
+            1,
+            BigDecimal.ONE
+        );
+
+        // Act
+        int actual1 = sut1.hashCode();
+        int actual2 = sut2.hashCode();
+
+        // Assert
+        assertEquals(actual1, actual2);
+    }
 }
