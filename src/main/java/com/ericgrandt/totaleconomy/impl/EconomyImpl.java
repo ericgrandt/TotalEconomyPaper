@@ -189,7 +189,35 @@ public class EconomyImpl implements Economy {
 
     @Override
     public EconomyResponse depositPlayer(OfflinePlayer player, double amount) {
-        return null;
+        UUID playerUUID = player.getUniqueId();
+        int currencyId = 1;
+
+        BigDecimal currentBalance = getBigDecimalBalance(playerUUID, currencyId);
+        if (currentBalance == null) {
+            return new EconomyResponse(
+                amount,
+                0,
+                EconomyResponse.ResponseType.FAILURE,
+                "No balance found for user"
+            );
+        }
+
+        double newBalance = currentBalance.doubleValue() + amount;
+        if (!updateBalance(playerUUID, currencyId, newBalance)) {
+            return new EconomyResponse(
+                amount,
+                currentBalance.doubleValue(),
+                EconomyResponse.ResponseType.FAILURE,
+                "Error updating balance"
+            );
+        }
+
+        return new EconomyResponse(
+            amount,
+            newBalance,
+            EconomyResponse.ResponseType.SUCCESS,
+            null
+        );
     }
 
     @Override
