@@ -1,5 +1,6 @@
 package com.ericgrandt.totaleconomy;
 
+import com.ericgrandt.totaleconomy.commands.BalanceCommand;
 import com.ericgrandt.totaleconomy.data.AccountData;
 import com.ericgrandt.totaleconomy.data.BalanceData;
 import com.ericgrandt.totaleconomy.data.CurrencyData;
@@ -43,24 +44,14 @@ public class TotalEconomy extends JavaPlugin implements Listener {
 
         AccountData accountData = new AccountData(database);
         BalanceData balanceData = new BalanceData(database);
-        Economy economy = new EconomyImpl(logger, this.isEnabled(), defaultCurrency, accountData, balanceData);
+        EconomyImpl economy = new EconomyImpl(logger, this.isEnabled(), defaultCurrency, accountData, balanceData);
 
-        registerVaultIfPresent(economy);
-    }
-
-    private void registerVaultIfPresent(Economy economy) {
-        if (getServer().getPluginManager().getPlugin("Vault") != null) {
-            getServer().getServicesManager().register(
-                Economy.class,
-                economy,
-                this,
-                ServicePriority.Highest
-            );
-
-            logger.info(String.format(
-                "[%s] Running with Vault dependency",
-                getDescription().getName()
-            ));
-        }
+        getServer().getServicesManager().register(
+            Economy.class,
+            economy,
+            this,
+            ServicePriority.Normal
+        );
+        this.getCommand("balance").setExecutor(new BalanceCommand(economy));
     }
 }
