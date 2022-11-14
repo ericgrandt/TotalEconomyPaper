@@ -1,12 +1,14 @@
 package com.ericgrandt.totaleconomy;
 
 import com.ericgrandt.totaleconomy.commands.BalanceCommand;
+import com.ericgrandt.totaleconomy.commands.PayCommand;
 import com.ericgrandt.totaleconomy.data.AccountData;
 import com.ericgrandt.totaleconomy.data.BalanceData;
 import com.ericgrandt.totaleconomy.data.CurrencyData;
 import com.ericgrandt.totaleconomy.data.Database;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,5 +55,6 @@ public class TotalEconomy extends JavaPlugin implements Listener {
             ServicePriority.Normal
         );
         this.getCommand("balance").setExecutor(new BalanceCommand(economy));
+        this.getCommand("pay").setExecutor(new PayCommand(new BukkitWrapper(), economy));
     }
 }

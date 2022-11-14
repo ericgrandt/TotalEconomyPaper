@@ -11,3 +11,7 @@ commands:
         description: Retrieve the player's balance
         usage: /<command>
         permission: totaleconomy.balance
+    pay:
+        description: Pay another player
+        usage: /<command> <player> <amount>
+        permission: totaleconomy.pay
