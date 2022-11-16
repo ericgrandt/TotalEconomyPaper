@@ -72,6 +72,7 @@ public class BalanceCommandTest {
     @Tag("Integration")
     public void onCommand_ShouldSendMessageWithBalanceToPlayer() throws SQLException {
         // Arrange
+        TestUtils.resetDb();
         TestUtils.seedCurrencies();
         TestUtils.seedAccounts();
 
