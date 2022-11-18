@@ -8,6 +8,7 @@ import com.ericgrandt.totaleconomy.data.CurrencyData;
 import com.ericgrandt.totaleconomy.data.Database;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.listeners.PlayerListener;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -21,6 +22,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class TotalEconomy extends JavaPlugin implements Listener {
     private final FileConfiguration config = getConfig();
     private final Logger logger = Logger.getLogger("Minecraft");
+
+    private EconomyImpl economy;
 
     @Override
     public void onEnable() {
@@ -46,7 +49,7 @@ public class TotalEconomy extends JavaPlugin implements Listener {
 
         AccountData accountData = new AccountData(database);
         BalanceData balanceData = new BalanceData(database);
-        EconomyImpl economy = new EconomyImpl(logger, this.isEnabled(), defaultCurrency, accountData, balanceData);
+        economy = new EconomyImpl(logger, this.isEnabled(), defaultCurrency, accountData, balanceData);
 
         getServer().getServicesManager().register(
             Economy.class,
@@ -56,5 +59,11 @@ public class TotalEconomy extends JavaPlugin implements Listener {
         );
         this.getCommand("balance").setExecutor(new BalanceCommand(economy));
         this.getCommand("pay").setExecutor(new PayCommand(new BukkitWrapper(), economy));
+
+        registerListeners();
+    }
+
+    private void registerListeners() {
+        getServer().getPluginManager().registerEvents(new PlayerListener(economy), this);
     }
 }
