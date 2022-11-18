@@ -245,14 +245,7 @@ public class PayCommandTest {
         when(playerMock.getUniqueId()).thenReturn(playerUUID);
         when(targetMock.getUniqueId()).thenReturn(targetUUID);
         when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(targetMock);
-        when(databaseMock.getConnection())
-            .thenReturn(TestUtils.getConnection())
-            .thenReturn(TestUtils.getConnection())
-            .thenReturn(TestUtils.getConnection())
-            .thenReturn(TestUtils.getConnection())
-            .thenReturn(TestUtils.getConnection())
-            .thenReturn(TestUtils.getConnection())
-            .thenReturn(TestUtils.getConnection());
+        when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
 
         CurrencyDto defaultCurrency = new CurrencyDto(
             1,
