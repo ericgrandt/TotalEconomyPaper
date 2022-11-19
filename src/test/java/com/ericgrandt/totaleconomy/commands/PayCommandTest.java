@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -237,14 +238,22 @@ public class PayCommandTest {
 
         UUID playerUUID = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
         UUID targetUUID = UUID.fromString("551fe9be-f77f-4bcb-81db-548db6e77aea");
+        double amount = 25;
+
+        Player playerMock = mock(Player.class);
+        String playerName = "Player 1";
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+        when(playerMock.getName()).thenReturn(playerName);
+
+        Player targetMock = mock(Player.class);
+        String targetName = "Player 2";
+        when(targetMock.getUniqueId()).thenReturn(targetUUID);
+        when(targetMock.getName()).thenReturn(targetName);
 
         BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
-        Database databaseMock = mock(Database.class);
-        Player playerMock = mock(Player.class);
-        Player targetMock = mock(Player.class);
-        when(playerMock.getUniqueId()).thenReturn(playerUUID);
-        when(targetMock.getUniqueId()).thenReturn(targetUUID);
         when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(targetMock);
+
+        Database databaseMock = mock(Database.class);
         when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
 
         CurrencyDto defaultCurrency = new CurrencyDto(
@@ -261,7 +270,7 @@ public class PayCommandTest {
         PayCommand sut = new PayCommand(bukkitWrapperMock, economy);
 
         // Act
-        String[] args = {"playerName", "25"};
+        String[] args = {"playerName", String.valueOf(amount)};
         sut.onCommand(playerMock, mock(Command.class), "", args);
 
         BigDecimal actualPlayerBalance = balanceData.getBalance(playerUUID, 1);
@@ -272,5 +281,12 @@ public class PayCommandTest {
         // Assert
         assertEquals(expectedPlayerBalance, actualPlayerBalance);
         assertEquals(expectedTargetBalance, actualTargetBalance);
+
+        verify(playerMock, times(1)).sendMessage(
+            String.format("You sent $25.00 to %s", targetName)
+        );
+        verify(targetMock, times(1)).sendMessage(
+            String.format("You received $25.00 from %s", playerName)
+        );
     }
 }

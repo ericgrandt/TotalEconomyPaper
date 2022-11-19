@@ -57,6 +57,10 @@ public class PayCommand implements CommandExecutor {
             return false;
         }
 
+        String formattedAmount = economy.format(amount);
+        player.sendMessage(String.format("You sent %s to %s", formattedAmount, target.getName()));
+        target.sendMessage(String.format("You received %s from %s", formattedAmount, player.getName()));
+
         return true;
     }
 
