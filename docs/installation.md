@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Commands
+title: Installation
 nav_order: 1
 ---
 
