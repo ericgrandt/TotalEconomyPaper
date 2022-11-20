@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Balance
-permalink: /commands/balance
+parent: Commands
 ---
 
 Command:
