@@ -1,7 +1,7 @@
 ---
 layout: page
 title: About
-permalink: /commands/about/
+permalink: /commands
 ---
 
 Placeholder
