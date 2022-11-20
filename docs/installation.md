@@ -9,6 +9,7 @@ nav_order: 1
 ## Requirements
 
 - [Spigot](https://www.spigotmc.org/)/[Paper](https://papermc.io/)
+- [Vault](https://dev.bukkit.org/projects/vault)
 - MySQL (>= 8) database
   - Execute the SQL in [schema.sql](https://github.com/ericgrandt/TotalEconomyPaper/blob/master/src/main/resources/schema.sql) to setup your schema (NOTE: This will be automated in a future release)
 
