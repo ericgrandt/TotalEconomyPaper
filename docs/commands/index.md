@@ -1,7 +1,6 @@
 ---
 layout: page
 title: Commands
-has_children: true
 ---
 
 # Commands
