@@ -1,1 +1,3 @@
-# Total Economy Documentation
+layout: page
+title: "Total Economy Documentation"
+permalink: /
