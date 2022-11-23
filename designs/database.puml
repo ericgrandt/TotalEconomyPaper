@@ -43,7 +43,7 @@ entity te_job {
 entity te_job_action {
     * id : varchar(36)
     --
-    * action : varchar(50)
+    * action_name : varchar(50)
 }
 
 entity te_job_reward {
