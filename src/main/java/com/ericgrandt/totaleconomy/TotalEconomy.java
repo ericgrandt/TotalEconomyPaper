@@ -57,13 +57,25 @@ public class TotalEconomy extends JavaPlugin implements Listener {
             this,
             ServicePriority.Normal
         );
+
+        registerCommands();
+        registerListeners();
+    }
+
+    private void registerCommands() {
         this.getCommand("balance").setExecutor(new BalanceCommand(economy));
         this.getCommand("pay").setExecutor(new PayCommand(new BukkitWrapper(), economy));
 
-        registerListeners();
+        if (config.getBoolean("features.jobs")) {
+            // Register job commands
+        }
     }
 
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new PlayerListener(economy), this);
+
+        if (config.getBoolean("features.jobs")) {
+            // Register the JobListener
+        }
     }
 }
