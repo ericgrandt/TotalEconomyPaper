@@ -1,6 +1,7 @@
 package com.ericgrandt.totaleconomy;
 
 import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
+import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.io.InputStream;
@@ -82,18 +83,41 @@ public class TestUtils {
         }
     }
 
+    public static void seedJobs() throws SQLException {
+        try (Connection conn = TestUtils.getConnection()) {
+            String insertDefaultBalance1 = "INSERT INTO te_job "
+                + "VALUES('a56a5842-1351-4b73-a021-bcd531260cd1', 'Test Job');";
+
+            Statement statement = conn.createStatement();
+            statement.execute(insertDefaultBalance1);
+        }
+    }
+
+    public static void seedJobExperience() throws SQLException {
+        try (Connection conn = TestUtils.getConnection()) {
+            String insertDefaultBalance1 = "INSERT INTO te_job_experience "
+                + "VALUES('748af95b-32a0-45c2-bfdc-9e87c023acdf', '62694fb0-07cc-4396-8d63-4f70646d75f0', 'a56a5842-1351-4b73-a021-bcd531260cd1', 50);";
+
+            Statement statement = conn.createStatement();
+            statement.execute(insertDefaultBalance1);
+        }
+    }
+
     public static void resetDb() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
             String deleteCurrencies = "DELETE FROM te_currency";
             String deleteUsers = "DELETE FROM te_account";
             String deleteBalances = "DELETE FROM te_balance";
             String deleteDefaultBalances = "DELETE FROM te_default_balance";
+            String deleteJobs = "DELETE FROM te_job";
+            String deleteJobExperience = "DELETE FROM te_job_experience";
 
             Statement statement = conn.createStatement();
             statement.execute(deleteCurrencies);
             statement.execute(deleteUsers);
             statement.execute(deleteBalances);
-            statement.execute(deleteDefaultBalances);
+            statement.execute(deleteJobs);
+            statement.execute(deleteJobExperience);
         }
     }
 
@@ -112,6 +136,30 @@ public class TestUtils {
                             rs.getString("account_id"),
                             rs.getInt("currency_id"),
                             rs.getBigDecimal("balance")
+                        );
+                    }
+
+                    return null;
+                }
+            }
+        }
+    }
+
+    public static JobExperienceDto getExperienceForJob(UUID accountId, UUID jobId) throws SQLException {
+        String query = "SELECT * FROM te_job_experience WHERE account_id = ? AND job_id = ?";
+
+        try (Connection conn = TestUtils.getConnection()) {
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, accountId.toString());
+                stmt.setString(2, jobId.toString());
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return new JobExperienceDto(
+                            rs.getString("id"),
+                            rs.getString("account_id"),
+                            rs.getString("job_id"),
+                            rs.getInt("experience")
                         );
                     }
 
