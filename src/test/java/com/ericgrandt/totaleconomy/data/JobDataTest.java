@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.ericgrandt.totaleconomy.TestUtils;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
-
+import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
@@ -74,6 +74,66 @@ public class JobDataTest {
 
     @Test
     @Tag("Unit")
+    public void getJobReward_WithRowFound_ShouldReturnAJobRewardDto() throws SQLException {
+        // Arrange
+        Database databaseMock = mock(Database.class);
+        Connection connectionMock = mock(Connection.class);
+        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
+        ResultSet resultSetMock = mock(ResultSet.class);
+        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
+        when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
+        when(resultSetMock.next()).thenReturn(true);
+        when(resultSetMock.getString("id")).thenReturn("id");
+        when(resultSetMock.getString("job_id")).thenReturn("jobId");
+        when(resultSetMock.getString("job_action_id")).thenReturn("jobActionId");
+        when(resultSetMock.getInt("currency_id")).thenReturn(1);
+        when(resultSetMock.getString("object_id")).thenReturn("objectId");
+        when(resultSetMock.getBigDecimal("money")).thenReturn(BigDecimal.TEN);
+        when(resultSetMock.getInt("experience")).thenReturn(10);
+
+        JobData sut = new JobData(databaseMock);
+
+        // Act
+        JobRewardDto actual = sut.getJobReward(UUID.randomUUID(), "");
+        JobRewardDto expected = new JobRewardDto(
+            "id",
+            "jobId",
+            "jobActionId",
+            1,
+            "objectId",
+            BigDecimal.TEN,
+            10
+        );
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void getJobReward_WithNoRowFound_ShouldReturnNull() throws SQLException {
+        // Arrange
+        Database databaseMock = mock(Database.class);
+        Connection connectionMock = mock(Connection.class);
+        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
+        ResultSet resultSetMock = mock(ResultSet.class);
+        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
+        when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
+        when(resultSetMock.next()).thenReturn(false);
+
+        JobData sut = new JobData(databaseMock);
+
+        // Act
+        JobRewardDto actual = sut.getJobReward(UUID.randomUUID(), "");
+
+        // Assert
+        assertNull(actual);
+    }
+
+    @Test
+    @Tag("Unit")
     public void updateExperienceForJob_WithRowAffected_ShouldReturnOne() throws SQLException {
         // Arrange
         Database databaseMock = mock(Database.class);
@@ -116,7 +176,7 @@ public class JobDataTest {
 
     @Test
     @Tag("Integration")
-    public void getExperienceForJob_ShouldReturnJobExperienceDto() throws SQLException {
+    public void getExperienceForJob_ShouldReturnAJobExperienceDto() throws SQLException {
         // Arrange
         TestUtils.resetDb();
         TestUtils.seedCurrencies();
@@ -139,6 +199,40 @@ public class JobDataTest {
             "62694fb0-07cc-4396-8d63-4f70646d75f0",
             "a56a5842-1351-4b73-a021-bcd531260cd1",
             50
+        );
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Integration")
+    public void getJobReward_ShouldReturnAJobRewardDto() throws SQLException {
+        // Arrange
+        TestUtils.resetDb();
+        TestUtils.seedCurrencies();
+        TestUtils.seedAccounts();
+        TestUtils.seedJobs();
+        TestUtils.seedJobActions();
+        TestUtils.seedJobRewards();
+
+        UUID jobActionId = UUID.fromString("fbc60ff9-d7e2-4704-9460-6edc2e7b6066");
+
+        Database databaseMock = mock(Database.class);
+        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+
+        JobData sut = new JobData(databaseMock);
+
+        // Act
+        JobRewardDto actual = sut.getJobReward(jobActionId, "minecraft:coal_ore");
+        JobRewardDto expected = new JobRewardDto(
+            "07ac5e1f-39ef-46a8-ad81-a4bc1facc090",
+            "a56a5842-1351-4b73-a021-bcd531260cd1",
+            "fbc60ff9-d7e2-4704-9460-6edc2e7b6066",
+            1,
+            "minecraft:coal_ore",
+            BigDecimal.valueOf(0.50).setScale(2, RoundingMode.DOWN),
+            1
         );
 
         // Assert

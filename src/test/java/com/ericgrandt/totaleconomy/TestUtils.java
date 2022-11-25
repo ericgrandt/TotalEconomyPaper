@@ -75,31 +75,52 @@ public class TestUtils {
 
     public static void seedDefaultBalances() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
-            String insertDefaultBalance1 = "INSERT INTO te_default_balance\n"
+            String insertDefaultBalance = "INSERT INTO te_default_balance\n"
                 + "VALUES('05231a59-b6fa-4d57-8450-5bd07f148a98', 1, 100.50);";
 
             Statement statement = conn.createStatement();
-            statement.execute(insertDefaultBalance1);
+            statement.execute(insertDefaultBalance);
         }
     }
 
     public static void seedJobs() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
-            String insertDefaultBalance1 = "INSERT INTO te_job "
+            String insertJob = "INSERT INTO te_job "
                 + "VALUES('a56a5842-1351-4b73-a021-bcd531260cd1', 'Test Job');";
 
             Statement statement = conn.createStatement();
-            statement.execute(insertDefaultBalance1);
+            statement.execute(insertJob);
         }
     }
 
     public static void seedJobExperience() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
-            String insertDefaultBalance1 = "INSERT INTO te_job_experience "
+            String insertJobExperience = "INSERT INTO te_job_experience "
                 + "VALUES('748af95b-32a0-45c2-bfdc-9e87c023acdf', '62694fb0-07cc-4396-8d63-4f70646d75f0', 'a56a5842-1351-4b73-a021-bcd531260cd1', 50);";
 
             Statement statement = conn.createStatement();
-            statement.execute(insertDefaultBalance1);
+            statement.execute(insertJobExperience);
+        }
+    }
+
+    public static void seedJobActions() throws SQLException {
+        try (Connection conn = TestUtils.getConnection()) {
+            String insertJobAction = "INSERT INTO te_job_action "
+                + "VALUES('fbc60ff9-d7e2-4704-9460-6edc2e7b6066', 'break');";
+
+            Statement statement = conn.createStatement();
+            statement.execute(insertJobAction);
+        }
+    }
+
+    public static void seedJobRewards() throws SQLException {
+        try (Connection conn = TestUtils.getConnection()) {
+            String insertJobReward = "INSERT INTO te_job_reward "
+                + "VALUES('07ac5e1f-39ef-46a8-ad81-a4bc1facc090', 'a56a5842-1351-4b73-a021-bcd531260cd1', "
+                + "'fbc60ff9-d7e2-4704-9460-6edc2e7b6066', 1, 'minecraft:coal_ore', 0.50, 1);";
+
+            Statement statement = conn.createStatement();
+            statement.execute(insertJobReward);
         }
     }
 
@@ -111,13 +132,18 @@ public class TestUtils {
             String deleteDefaultBalances = "DELETE FROM te_default_balance";
             String deleteJobs = "DELETE FROM te_job";
             String deleteJobExperience = "DELETE FROM te_job_experience";
+            String deleteJobActions = "DELETE FROM te_job_action";
+            String deleteJobRewards = "DELETE FROM te_job_reward";
 
             Statement statement = conn.createStatement();
             statement.execute(deleteCurrencies);
             statement.execute(deleteUsers);
             statement.execute(deleteBalances);
+            statement.execute(deleteDefaultBalances);
             statement.execute(deleteJobs);
             statement.execute(deleteJobExperience);
+            statement.execute(deleteJobActions);
+            statement.execute(deleteJobRewards);
         }
     }
 

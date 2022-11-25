@@ -1,8 +1,7 @@
 package com.ericgrandt.totaleconomy.data;
 
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
-
-import java.math.BigDecimal;
+import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -41,6 +40,35 @@ public class JobData {
         return null;
     }
 
+    public JobRewardDto getJobReward(UUID jobActionId, String objectId) throws SQLException {
+        String getDefaultBalanceQuery = "SELECT * FROM te_job_reward "
+            + "WHERE job_action_id = ? AND object_id = ?";
+
+        try (
+            Connection conn = database.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
+        ) {
+            stmt.setString(1, jobActionId.toString());
+            stmt.setString(2, objectId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new JobRewardDto(
+                        rs.getString("id"),
+                        rs.getString("job_id"),
+                        rs.getString("job_action_id"),
+                        rs.getInt("currency_id"),
+                        rs.getString("object_id"),
+                        rs.getBigDecimal("money"),
+                        rs.getInt("experience")
+                    );
+                }
+            }
+        }
+
+        return null;
+    }
+
     public int updateExperienceForJob(UUID accountId, UUID jobId, int experience) throws SQLException {
         String updateExperienceForJobQuery = "UPDATE te_job_experience SET experience = ? WHERE account_id = ? AND job_id = ?";
 
@@ -55,8 +83,4 @@ public class JobData {
             return stmt.executeUpdate();
         }
     }
-
-    // public JobRewardDto getJobReward() {
-    //
-    // }
 }
