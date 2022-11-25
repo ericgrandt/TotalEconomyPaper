@@ -35,11 +35,11 @@ public class BalanceData {
     }
 
     public int updateBalance(UUID accountId, int currencyId, double balance) throws SQLException {
-        String getDefaultBalanceQuery = "UPDATE te_balance SET balance = ? WHERE account_id = ? AND currency_id = ?";
+        String updateBalanceQuery = "UPDATE te_balance SET balance = ? WHERE account_id = ? AND currency_id = ?";
 
         try (
             Connection conn = database.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
+            PreparedStatement stmt = conn.prepareStatement(updateBalanceQuery)
         ) {
             stmt.setBigDecimal(1, BigDecimal.valueOf(balance));
             stmt.setString(2, accountId.toString());

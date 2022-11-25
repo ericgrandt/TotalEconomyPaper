@@ -71,7 +71,7 @@ public class BalanceDataTest {
 
     @Test
     @Tag("Unit")
-    public void update_WithBalanceUpdated_ShouldReturnTrue() throws SQLException {
+    public void updateBalance_WithBalanceUpdated_ShouldReturnOne() throws SQLException {
         // Arrange
         Database databaseMock = mock(Database.class);
         Connection connectionMock = mock(Connection.class);
@@ -92,7 +92,7 @@ public class BalanceDataTest {
 
     @Test
     @Tag("Unit")
-    public void update_WithNoBalanceUpdated_ShouldReturnZero() throws SQLException {
+    public void updateBalance_WithNoBalanceUpdated_ShouldReturnZero() throws SQLException {
         // Arrange
         Database databaseMock = mock(Database.class);
         Connection connectionMock = mock(Connection.class);
