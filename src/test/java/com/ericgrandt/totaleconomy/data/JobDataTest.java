@@ -1,28 +1,77 @@
 package com.ericgrandt.totaleconomy.data;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.ericgrandt.totaleconomy.TestUtils;
-import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class JobDataTest {
+    @Test
+    @Tag("Unit")
+    public void getExperienceForJob_WithRowFound_ShouldReturnJobExperienceDto() throws SQLException {
+        // Arrange
+        Database databaseMock = mock(Database.class);
+        Connection connectionMock = mock(Connection.class);
+        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
+        ResultSet resultSetMock = mock(ResultSet.class);
+        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
+        when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
+        when(resultSetMock.next()).thenReturn(true);
+        when(resultSetMock.getString("id")).thenReturn("id");
+        when(resultSetMock.getString("account_id")).thenReturn("accountId");
+        when(resultSetMock.getString("job_id")).thenReturn("jobId");
+        when(resultSetMock.getInt("experience")).thenReturn(10);
+
+        JobData sut = new JobData(databaseMock);
+
+        // Act
+        JobExperienceDto actual = sut.getExperienceForJob(UUID.randomUUID(), UUID.randomUUID());
+        JobExperienceDto expected = new JobExperienceDto("id", "accountId", "jobId", 10);
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void getExperienceForJob_WithNoRowFound_ShouldReturnNull() throws SQLException {
+        // Arrange
+        Database databaseMock = mock(Database.class);
+        Connection connectionMock = mock(Connection.class);
+        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
+        ResultSet resultSetMock = mock(ResultSet.class);
+        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
+        when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
+        when(resultSetMock.next()).thenReturn(false);
+
+        JobData sut = new JobData(databaseMock);
+
+        // Act
+        JobExperienceDto actual = sut.getExperienceForJob(UUID.randomUUID(), UUID.randomUUID());
+
+        // Assert
+        assertNull(actual);
+    }
+
     @Test
     @Tag("Unit")
     public void updateExperienceForJob_WithRowAffected_ShouldReturnOne() throws SQLException {
@@ -60,6 +109,37 @@ public class JobDataTest {
         // Act
         int actual = sut.updateExperienceForJob(UUID.randomUUID(), UUID.randomUUID(), 10);
         int expected = 0;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Integration")
+    public void getExperienceForJob_ShouldReturnJobExperienceDto() throws SQLException {
+        // Arrange
+        TestUtils.resetDb();
+        TestUtils.seedCurrencies();
+        TestUtils.seedAccounts();
+        TestUtils.seedJobs();
+        TestUtils.seedJobExperience();
+
+        UUID accountId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
+        UUID jobId = UUID.fromString("a56a5842-1351-4b73-a021-bcd531260cd1");
+
+        Database databaseMock = mock(Database.class);
+        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+
+        JobData sut = new JobData(databaseMock);
+
+        // Act
+        JobExperienceDto actual = sut.getExperienceForJob(accountId, jobId);
+        JobExperienceDto expected = new JobExperienceDto(
+            "748af95b-32a0-45c2-bfdc-9e87c023acdf",
+            "62694fb0-07cc-4396-8d63-4f70646d75f0",
+            "a56a5842-1351-4b73-a021-bcd531260cd1",
+            50
+        );
 
         // Assert
         assertEquals(expected, actual);
