@@ -1,5 +1,6 @@
 package com.ericgrandt.totaleconomy.data;
 
+import com.ericgrandt.totaleconomy.data.dto.JobActionDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import java.sql.Connection;
@@ -40,16 +41,16 @@ public class JobData {
         return null;
     }
 
-    public JobRewardDto getJobReward(UUID jobActionId, String objectId) throws SQLException {
+    public JobRewardDto getJobReward(String jobActionId, String material) throws SQLException {
         String getDefaultBalanceQuery = "SELECT * FROM te_job_reward "
-            + "WHERE job_action_id = ? AND object_id = ?";
+            + "WHERE job_action_id = ? AND material = ?";
 
         try (
             Connection conn = database.getConnection();
             PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
         ) {
-            stmt.setString(1, jobActionId.toString());
-            stmt.setString(2, objectId);
+            stmt.setString(1, jobActionId);
+            stmt.setString(2, material);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -58,9 +59,31 @@ public class JobData {
                         rs.getString("job_id"),
                         rs.getString("job_action_id"),
                         rs.getInt("currency_id"),
-                        rs.getString("object_id"),
+                        rs.getString("material"),
                         rs.getBigDecimal("money"),
                         rs.getInt("experience")
+                    );
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public JobActionDto getJobActionByName(String jobActionName) throws SQLException {
+        String getDefaultBalanceQuery = "SELECT * FROM te_job_action WHERE action_name = ?";
+
+        try (
+            Connection conn = database.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
+        ) {
+            stmt.setString(1, jobActionName);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new JobActionDto(
+                        rs.getString("id"),
+                        rs.getString("action_name")
                     );
                 }
             }

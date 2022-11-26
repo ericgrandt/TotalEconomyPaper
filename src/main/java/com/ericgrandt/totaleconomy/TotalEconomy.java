@@ -6,9 +6,12 @@ import com.ericgrandt.totaleconomy.data.AccountData;
 import com.ericgrandt.totaleconomy.data.BalanceData;
 import com.ericgrandt.totaleconomy.data.CurrencyData;
 import com.ericgrandt.totaleconomy.data.Database;
+import com.ericgrandt.totaleconomy.data.JobData;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.listeners.JobListener;
 import com.ericgrandt.totaleconomy.listeners.PlayerListener;
+import com.ericgrandt.totaleconomy.services.JobService;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -23,11 +26,12 @@ public class TotalEconomy extends JavaPlugin implements Listener {
     private final FileConfiguration config = getConfig();
     private final Logger logger = Logger.getLogger("Minecraft");
 
+    private Database database;
     private EconomyImpl economy;
 
     @Override
     public void onEnable() {
-        Database database = new Database(
+        database = new Database(
             config.getString("database.url"),
             config.getString("database.user"),
             config.getString("database.password")
@@ -75,7 +79,10 @@ public class TotalEconomy extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new PlayerListener(economy), this);
 
         if (config.getBoolean("features.jobs")) {
-            // Register the JobListener
+            JobData jobData = new JobData(database);
+            JobService jobService = new JobService(logger, jobData);
+
+            getServer().getPluginManager().registerEvents(new JobListener(economy, jobService), this);
         }
     }
 }

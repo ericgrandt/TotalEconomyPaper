@@ -1,5 +1,6 @@
 package com.ericgrandt.totaleconomy;
 
+import com.ericgrandt.totaleconomy.data.dto.AccountDto;
 import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.zaxxer.hikari.HikariConfig;
@@ -147,12 +148,33 @@ public class TestUtils {
         }
     }
 
-    public static BalanceDto getBalanceForAccountId(UUID accountUUID, int currencyId) throws SQLException {
+    public static AccountDto getAccount(UUID accountId) throws SQLException {
+        String query = "SELECT * FROM te_account WHERE id = ?";
+
+        try (Connection conn = TestUtils.getConnection()) {
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, accountId.toString());
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return new AccountDto(
+                            rs.getString("id"),
+                            rs.getTimestamp("created")
+                        );
+                    }
+
+                    return null;
+                }
+            }
+        }
+    }
+
+    public static BalanceDto getBalanceForAccountId(UUID accountId, int currencyId) throws SQLException {
         String query = "SELECT * FROM te_balance WHERE account_id = ? AND currency_id = ?";
 
         try (Connection conn = TestUtils.getConnection()) {
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                stmt.setString(1, accountUUID.toString());
+                stmt.setString(1, accountId.toString());
                 stmt.setInt(2, currencyId);
 
                 try (ResultSet rs = stmt.executeQuery()) {

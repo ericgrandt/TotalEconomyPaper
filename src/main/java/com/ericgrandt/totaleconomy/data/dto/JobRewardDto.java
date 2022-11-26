@@ -7,7 +7,7 @@ public record JobRewardDto(
     String jobId,
     String jobActionId,
     int currencyId,
-    String objectId,
+    String material,
     BigDecimal money,
     int experience
 ) {
