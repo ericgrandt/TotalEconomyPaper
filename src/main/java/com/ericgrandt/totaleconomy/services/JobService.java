@@ -33,4 +33,8 @@ public class JobService {
             return null;
         }
     }
+
+    public void addExperience(String jobId, int experienceToAdd) {
+
+    }
 }

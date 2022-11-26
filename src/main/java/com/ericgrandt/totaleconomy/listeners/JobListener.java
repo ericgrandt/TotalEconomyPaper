@@ -9,8 +9,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
 public class JobListener implements Listener {
-    private final JobService jobService;
     private final EconomyImpl economy;
+    private final JobService jobService;
 
     public JobListener(EconomyImpl economy, JobService jobService) {
         this.economy = economy;
@@ -25,12 +25,13 @@ public class JobListener implements Listener {
             return;
         }
 
-        Player player = event.getPlayer();
-        player.sendMessage(jobRewardDto.money() + " " + jobRewardDto.experience());
-        // Check if reward exists for broken block
-        // If it doesn't, return
-        // If it does, use the values to call the service layer to add experience and money
+        addReward(event.getPlayer(), jobRewardDto);
     }
 
     // PlayerJoinEvent to set up job experience rows for the player
+
+    private void addReward(Player player, JobRewardDto jobRewardDto) {
+        economy.depositPlayer(player, jobRewardDto.money().doubleValue());
+        jobService.addExperience(jobRewardDto.jobId(), jobRewardDto.experience());
+    }
 }
