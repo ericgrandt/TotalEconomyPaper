@@ -10,6 +10,7 @@ import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.services.JobService;
 import java.math.BigDecimal;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -29,7 +30,7 @@ public class JobListenerTest {
         String materialName = material.name().toLowerCase();
         JobRewardDto jobRewardDto = new JobRewardDto(
             "",
-            "",
+            "de8ee82d-e988-4b6e-8dfd-8768415e4a0d",
             "",
             1,
             materialName,
@@ -60,9 +61,10 @@ public class JobListenerTest {
         // Arrange
         Material material = Material.STONE;
         String materialName = material.name().toLowerCase();
+        UUID playerId = UUID.randomUUID();
         JobRewardDto jobRewardDto = new JobRewardDto(
             "",
-            "jobId",
+            "de8ee82d-e988-4b6e-8dfd-8768415e4a0d",
             "",
             1,
             materialName,
@@ -75,6 +77,7 @@ public class JobListenerTest {
         EconomyImpl economyMock = mock(EconomyImpl.class);
         JobService jobServiceMock = mock(JobService.class);
         when(blockMock.getType()).thenReturn(material);
+        when(playerMock.getUniqueId()).thenReturn(playerId);
         when(jobServiceMock.getJobReward("break", materialName)).thenReturn(jobRewardDto);
 
         BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockMock, playerMock);
@@ -85,7 +88,8 @@ public class JobListenerTest {
 
         // Assert
         verify(jobServiceMock, times(1)).addExperience(
-            jobRewardDto.jobId(),
+            playerId,
+            UUID.fromString(jobRewardDto.jobId()),
             jobRewardDto.experience()
         );
     }
@@ -135,6 +139,10 @@ public class JobListenerTest {
         sut.onBreakAction(blockBreakEvent);
 
         // Assert
-        verify(jobServiceMock, times(0)).addExperience(any(String.class), any(Integer.class));
+        verify(jobServiceMock, times(0)).addExperience(
+            any(UUID.class),
+            any(UUID.class),
+            any(Integer.class)
+        );
     }
 }

@@ -3,6 +3,7 @@ package com.ericgrandt.totaleconomy.listeners;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.services.JobService;
+import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -32,6 +33,6 @@ public class JobListener implements Listener {
 
     private void addReward(Player player, JobRewardDto jobRewardDto) {
         economy.depositPlayer(player, jobRewardDto.money().doubleValue());
-        jobService.addExperience(jobRewardDto.jobId(), jobRewardDto.experience());
+        jobService.addExperience(player.getUniqueId(), UUID.fromString(jobRewardDto.jobId()), jobRewardDto.experience());
     }
 }
