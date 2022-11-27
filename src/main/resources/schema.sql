@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS te_job_experience (
     id VARCHAR(36) PRIMARY KEY DEFAULT (uuid()),
     account_id VARCHAR(36) NOT NULL,
     job_id VARCHAR(36) NOT NULL,
-    experience INT UNSIGNED NOT NULL,
+    experience INT UNSIGNED NOT NULL DEFAULT 0,
     FOREIGN KEY (account_id) REFERENCES te_account(id) ON DELETE CASCADE,
     FOREIGN KEY (job_id) REFERENCES te_job(id) ON DELETE CASCADE,
     CONSTRAINT uk_job_experience UNIQUE(account_id, job_id)

@@ -92,6 +92,19 @@ public class JobData {
         return null;
     }
 
+    public void createJobExperienceRows(UUID accountId) throws SQLException {
+        String createBalanceQuery = "INSERT INTO te_job_experience(account_id, job_id) "
+            + "SELECT ?, j.id "
+            + "FROM te_job j";
+
+        try (Connection conn = database.getConnection()) {
+            try (PreparedStatement accountStmt = conn.prepareStatement(createBalanceQuery)) {
+                accountStmt.setString(1, accountId.toString());
+                accountStmt.executeUpdate();
+            }
+        }
+    }
+
     public int updateExperienceForJob(UUID accountId, UUID jobId, int experience) throws SQLException {
         String updateExperienceForJobQuery = "UPDATE te_job_experience SET experience = ? WHERE account_id = ? AND job_id = ?";
 

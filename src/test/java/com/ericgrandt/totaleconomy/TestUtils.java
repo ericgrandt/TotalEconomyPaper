@@ -12,6 +12,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.apache.ibatis.jdbc.ScriptRunner;
 
@@ -86,21 +88,25 @@ public class TestUtils {
 
     public static void seedJobs() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
-            String insertJob = "INSERT INTO te_job "
-                + "VALUES('a56a5842-1351-4b73-a021-bcd531260cd1', 'Test Job');";
+            String insertJob1 = "INSERT INTO te_job VALUES('a56a5842-1351-4b73-a021-bcd531260cd1', 'Test Job 1');";
+            String insertJob2 = "INSERT INTO te_job VALUES('858febd0-7122-4ea4-b270-a69a4b6a53a4', 'Test Job 2');";
 
             Statement statement = conn.createStatement();
-            statement.execute(insertJob);
+            statement.execute(insertJob1);
+            statement.execute(insertJob2);
         }
     }
 
     public static void seedJobExperience() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
-            String insertJobExperience = "INSERT INTO te_job_experience "
+            String insertJobExperience1 = "INSERT INTO te_job_experience "
                 + "VALUES('748af95b-32a0-45c2-bfdc-9e87c023acdf', '62694fb0-07cc-4396-8d63-4f70646d75f0', 'a56a5842-1351-4b73-a021-bcd531260cd1', 50);";
+            String insertJobExperience2 = "INSERT INTO te_job_experience "
+                + "VALUES('6cebc95b-7743-4f63-92c6-0fd0538d8b0c', '62694fb0-07cc-4396-8d63-4f70646d75f0', '858febd0-7122-4ea4-b270-a69a4b6a53a4', 10);";
 
             Statement statement = conn.createStatement();
-            statement.execute(insertJobExperience);
+            statement.execute(insertJobExperience1);
+            statement.execute(insertJobExperience2);
         }
     }
 
@@ -212,6 +218,32 @@ public class TestUtils {
                     }
 
                     return null;
+                }
+            }
+        }
+    }
+
+    public static List<JobExperienceDto> getExperienceForJobs(UUID accountId) throws SQLException {
+        String query = "SELECT * FROM te_job_experience WHERE account_id = ?";
+
+        try (Connection conn = TestUtils.getConnection()) {
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, accountId.toString());
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    List<JobExperienceDto> jobExperienceDtos = new ArrayList<>();
+                    while (rs.next()) {
+                        jobExperienceDtos.add(
+                            new JobExperienceDto(
+                                rs.getString("id"),
+                                rs.getString("account_id"),
+                                rs.getString("job_id"),
+                                rs.getInt("experience")
+                            )
+                        );
+                    }
+
+                    return jobExperienceDtos;
                 }
             }
         }

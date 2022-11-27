@@ -16,6 +16,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -310,6 +312,49 @@ public class JobDataTest {
         );
 
         // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Integration")
+    public void createJobExperienceRows_ShouldCreateARowForEachJob() throws SQLException {
+        // Arrange
+        TestUtils.resetDb();
+        TestUtils.seedCurrencies();
+        TestUtils.seedAccounts();
+        TestUtils.seedJobs();
+
+        UUID accountId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
+
+        Database databaseMock = mock(Database.class);
+        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+
+        JobData sut = new JobData(databaseMock);
+
+        // Act
+        sut.createJobExperienceRows(accountId);
+
+        List<JobExperienceDto> actual = TestUtils.getExperienceForJobs(accountId);
+        List<JobExperienceDto> expected = new ArrayList<>();
+        expected.add(
+            new JobExperienceDto(
+                actual.get(0).id(),
+                accountId.toString(),
+                "a56a5842-1351-4b73-a021-bcd531260cd1",
+                0
+            )
+        );
+        expected.add(
+            new JobExperienceDto(
+                actual.get(1).id(),
+                accountId.toString(),
+                "858febd0-7122-4ea4-b270-a69a4b6a53a4",
+                0
+            )
+        );
+
+        // Assert
+        assertEquals(2, actual.size());
         assertEquals(expected, actual);
     }
 
