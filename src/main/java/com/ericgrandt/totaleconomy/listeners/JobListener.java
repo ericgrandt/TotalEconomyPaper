@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 public class JobListener implements Listener {
     private final EconomyImpl economy;
@@ -29,7 +30,10 @@ public class JobListener implements Listener {
         addReward(event.getPlayer(), jobRewardDto);
     }
 
-    // PlayerJoinEvent to set up job experience rows for the player
+    @EventHandler
+    public void createJobExperienceOnPlayerJoin(PlayerJoinEvent event) {
+        jobService.createJobExperienceForAccount(event.getPlayer().getUniqueId());
+    }
 
     private void addReward(Player player, JobRewardDto jobRewardDto) {
         economy.depositPlayer(player, jobRewardDto.money().doubleValue());

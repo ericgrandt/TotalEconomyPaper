@@ -15,6 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -144,5 +145,25 @@ public class JobListenerTest {
             any(UUID.class),
             any(Integer.class)
         );
+    }
+
+    @Test
+    @Tag("Unit")
+    public void createJobExperienceOnPlayerJoin_ShouldCallTheJobService() {
+        // Arrange
+        UUID playerId = UUID.randomUUID();
+
+        Player playerMock = mock(Player.class);
+        JobService jobServiceMock = mock(JobService.class);
+        when(playerMock.getUniqueId()).thenReturn(playerId);
+
+        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(playerMock, "");
+        JobListener sut = new JobListener(mock(EconomyImpl.class), jobServiceMock);
+
+        // Act
+        sut.createJobExperienceOnPlayerJoin(playerJoinEvent);
+
+        // Assert
+        verify(jobServiceMock, times(1)).createJobExperienceForAccount(playerId);
     }
 }
