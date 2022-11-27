@@ -36,6 +36,21 @@ public class JobService {
         }
     }
 
+    public void createJobExperienceForAccount(UUID accountId) {
+        try {
+            jobData.createJobExperienceRows(accountId);
+        } catch (SQLException e) {
+            logger.log(
+                Level.SEVERE,
+                String.format(
+                    "[Total Economy] Error calling createJobExperienceForAccount (accountId: %s)",
+                    accountId
+                ),
+                e
+            );
+        }
+    }
+
     public void addExperience(UUID accountId, UUID jobId, int experienceToAdd) {
         try {
             JobExperienceDto jobExperienceDto = jobData.getExperienceForJob(accountId, jobId);

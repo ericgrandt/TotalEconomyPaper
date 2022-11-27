@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -143,6 +144,50 @@ public class JobServiceTest {
                     "[Total Economy] Error calling getJobReward (actionName: %s, materialName: %s)",
                     "break",
                     jobReward.material()
+                )
+            ),
+            any(SQLException.class)
+        );
+    }
+
+    @Test
+    @Tag("Unit")
+    public void createJobExperienceForAccount_WithSuccess_ShouldCallJobData() throws SQLException {
+        // Arrange
+        UUID accountId = UUID.randomUUID();
+
+        JobData jobDataMock = mock(JobData.class);
+
+        JobService sut = new JobService(loggerMock, jobDataMock);
+
+        // Act
+        sut.createJobExperienceForAccount(accountId);
+
+        // Assert
+        verify(jobDataMock, times(1)).createJobExperienceRows(accountId);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void createJobExperienceForAccount_WithSqlException_ShouldLogError() throws SQLException {
+        // Arrange
+        UUID accountId = UUID.randomUUID();
+
+        JobData jobDataMock = mock(JobData.class);
+        doThrow(SQLException.class).when(jobDataMock).createJobExperienceRows(accountId);
+
+        JobService sut = new JobService(loggerMock, jobDataMock);
+
+        // Act
+        sut.createJobExperienceForAccount(accountId);
+
+        // Assert
+        verify(loggerMock, times(1)).log(
+            eq(Level.SEVERE),
+            eq(
+                String.format(
+                    "[Total Economy] Error calling createJobExperienceForAccount (accountId: %s)",
+                    accountId
                 )
             ),
             any(SQLException.class)
