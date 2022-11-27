@@ -94,8 +94,7 @@ public class JobData {
 
     public void createJobExperienceRows(UUID accountId) throws SQLException {
         String createBalanceQuery = "INSERT INTO te_job_experience(account_id, job_id) "
-            + "SELECT ?, j.id "
-            + "FROM te_job j";
+            + "SELECT ?, j.id FROM te_job j ON DUPLICATE KEY UPDATE account_id = account_id";
 
         try (Connection conn = database.getConnection()) {
             try (PreparedStatement accountStmt = conn.prepareStatement(createBalanceQuery)) {

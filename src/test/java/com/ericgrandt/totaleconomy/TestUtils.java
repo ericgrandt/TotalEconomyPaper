@@ -22,7 +22,7 @@ public class TestUtils {
     private static final HikariDataSource ds;
 
     static {
-        config.setJdbcUrl("jdbc:h2:mem:totaleconomy");
+        config.setJdbcUrl("jdbc:h2:mem:totaleconomy;MODE=MySQL");
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
@@ -224,7 +224,7 @@ public class TestUtils {
     }
 
     public static List<JobExperienceDto> getExperienceForJobs(UUID accountId) throws SQLException {
-        String query = "SELECT * FROM te_job_experience WHERE account_id = ?";
+        String query = "SELECT account_id, job_id, experience FROM te_job_experience WHERE account_id = ?";
 
         try (Connection conn = TestUtils.getConnection()) {
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -235,7 +235,7 @@ public class TestUtils {
                     while (rs.next()) {
                         jobExperienceDtos.add(
                             new JobExperienceDto(
-                                rs.getString("id"),
+                                "",
                                 rs.getString("account_id"),
                                 rs.getString("job_id"),
                                 rs.getInt("experience")

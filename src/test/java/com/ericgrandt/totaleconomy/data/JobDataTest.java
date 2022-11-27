@@ -2,6 +2,7 @@ package com.ericgrandt.totaleconomy.data;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -338,7 +339,7 @@ public class JobDataTest {
         List<JobExperienceDto> expected = new ArrayList<>();
         expected.add(
             new JobExperienceDto(
-                actual.get(0).id(),
+                "",
                 accountId.toString(),
                 "a56a5842-1351-4b73-a021-bcd531260cd1",
                 0
@@ -346,7 +347,7 @@ public class JobDataTest {
         );
         expected.add(
             new JobExperienceDto(
-                actual.get(1).id(),
+                "",
                 accountId.toString(),
                 "858febd0-7122-4ea4-b270-a69a4b6a53a4",
                 0
@@ -355,7 +356,8 @@ public class JobDataTest {
 
         // Assert
         assertEquals(2, actual.size());
-        assertEquals(expected, actual);
+        assertEquals(expected.size(), actual.size());
+        assertTrue(actual.containsAll(expected));
     }
 
     @Test

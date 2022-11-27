@@ -19,11 +19,11 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
     testImplementation("com.github.MilkBowl:VaultAPI:1.7")
 
-    implementation("org.mybatis:mybatis:3.5.6")
-    testImplementation("org.mybatis:mybatis:3.5.6")
+    implementation("org.mybatis:mybatis:3.5.11")
+    testImplementation("org.mybatis:mybatis:3.5.11")
 
-    testImplementation("com.h2database:h2:1.3.148")
-    testImplementation("com.zaxxer:HikariCP:2.6.3")
+    testImplementation("com.h2database:h2:2.1.214")
+    testImplementation("com.zaxxer:HikariCP:5.0.1")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")

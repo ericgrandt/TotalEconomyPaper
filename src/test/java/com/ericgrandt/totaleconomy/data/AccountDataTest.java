@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -240,35 +239,6 @@ public class AccountDataTest {
         assertEquals(expectedBalance.getAccountId(), actualBalance.getAccountId());
         assertEquals(expectedBalance.getCurrencyId(), actualBalance.getCurrencyId());
         assertEquals(expectedBalance.getBalance(), actualBalance.getBalance());
-    }
-
-    @Test
-    @Tag("Integration")
-    public void createAccount_WithSqlExceptionOnBalanceInsert_ShouldRollback() throws SQLException {
-        // Arrange
-        TestUtils.resetDb();
-        TestUtils.seedCurrencies();
-        TestUtils.seedDefaultBalances();
-
-        Database databaseMock = mock(Database.class);
-        Connection connectionSpy = spy(TestUtils.getConnection());
-        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
-        when(databaseMock.getConnection()).thenReturn(connectionSpy);
-        when(connectionSpy.prepareStatement(anyString())).thenCallRealMethod().thenReturn(preparedStatementMock);
-        when(preparedStatementMock.executeUpdate()).thenThrow(SQLException.class);
-
-        AccountData sut = new AccountData(databaseMock);
-
-        UUID uuid = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
-
-        // Act/Assert
-        assertThrows(
-            SQLException.class,
-            () -> sut.createAccount(uuid, 1)
-        );
-
-        assertNull(getAccountForId(uuid));
-        assertNull(TestUtils.getBalanceForAccountId(uuid, 1));
     }
 
     @Test
