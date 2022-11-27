@@ -1,6 +1,7 @@
 package com.ericgrandt.totaleconomy.data;
 
 import com.ericgrandt.totaleconomy.data.dto.JobActionDto;
+import com.ericgrandt.totaleconomy.data.dto.JobDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import java.sql.Connection;
@@ -14,6 +15,28 @@ public class JobData {
 
     public JobData(Database database) {
         this.database = database;
+    }
+
+    public JobDto getJob(UUID jobId) throws SQLException {
+        String getDefaultBalanceQuery = "SELECT * FROM te_job WHERE id = ?";
+
+        try (
+            Connection conn = database.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
+        ) {
+            stmt.setString(1, jobId.toString());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new JobDto(
+                        rs.getString("id"),
+                        rs.getString("job_name")
+                    );
+                }
+            }
+        }
+
+        return null;
     }
 
     public JobExperienceDto getExperienceForJob(UUID accountId, UUID jobId) throws SQLException {

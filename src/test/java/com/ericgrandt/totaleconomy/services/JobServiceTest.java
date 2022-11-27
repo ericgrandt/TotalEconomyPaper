@@ -1,9 +1,7 @@
 package com.ericgrandt.totaleconomy.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -14,15 +12,15 @@ import static org.mockito.Mockito.when;
 
 import com.ericgrandt.totaleconomy.data.JobData;
 import com.ericgrandt.totaleconomy.data.dto.JobActionDto;
+import com.ericgrandt.totaleconomy.data.dto.JobDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
+import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -210,10 +208,12 @@ public class JobServiceTest {
             jobId.toString(),
             10
         );
+        JobDto jobDto = new JobDto(jobId.toString(), "Test Job 1");
         int experienceToAdd = 1;
 
         JobData jobDataMock = mock(JobData.class);
         when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(jobExperienceDto);
+        when(jobDataMock.getJob(jobId)).thenReturn(jobDto);
 
         JobService sut = new JobService(loggerMock, jobDataMock);
 
@@ -240,16 +240,18 @@ public class JobServiceTest {
             jobId.toString(),
             10
         );
+        JobDto jobDto = new JobDto(jobId.toString(), "Test Job 1");
         int experienceToAdd = 1;
 
         JobData jobDataMock = mock(JobData.class);
         when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(jobExperienceDto);
+        when(jobDataMock.getJob(jobId)).thenReturn(jobDto);
 
         JobService sut = new JobService(loggerMock, jobDataMock);
 
         // Act
         AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
-        AddExperienceResult expected = new AddExperienceResult(1, false);
+        AddExperienceResult expected = new AddExperienceResult(jobDto.jobName(), 1, false);
 
         // Assert
         assertEquals(expected, actual);
@@ -267,16 +269,18 @@ public class JobServiceTest {
             jobId.toString(),
             10
         );
+        JobDto jobDto = new JobDto(jobId.toString(), "Test Job 1");
         int experienceToAdd = 100;
 
         JobData jobDataMock = mock(JobData.class);
         when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(jobExperienceDto);
+        when(jobDataMock.getJob(jobId)).thenReturn(jobDto);
 
         JobService sut = new JobService(loggerMock, jobDataMock);
 
         // Act
         AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
-        AddExperienceResult expected = new AddExperienceResult(2, true);
+        AddExperienceResult expected = new AddExperienceResult(jobDto.jobName(), 2, true);
 
         // Assert
         assertEquals(expected, actual);
@@ -297,7 +301,7 @@ public class JobServiceTest {
 
         // Act
         AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
-        AddExperienceResult expected = new AddExperienceResult(-1, false);
+        AddExperienceResult expected = new AddExperienceResult("", -1, false);
 
         // Assert
         assertEquals(expected, actual);
@@ -373,7 +377,7 @@ public class JobServiceTest {
 
         // Act
         AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
-        AddExperienceResult expected = new AddExperienceResult(-1, false);
+        AddExperienceResult expected = new AddExperienceResult("", -1, false);
 
         // Assert
         assertEquals(expected, actual);

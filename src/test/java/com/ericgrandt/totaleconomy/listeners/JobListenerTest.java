@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import com.ericgrandt.totaleconomy.services.JobService;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -29,6 +30,7 @@ public class JobListenerTest {
         // Arrange
         Material material = Material.STONE;
         String materialName = material.name().toLowerCase();
+        UUID playerId = UUID.randomUUID();
         JobRewardDto jobRewardDto = new JobRewardDto(
             "",
             "de8ee82d-e988-4b6e-8dfd-8768415e4a0d",
@@ -44,7 +46,11 @@ public class JobListenerTest {
         EconomyImpl economyMock = mock(EconomyImpl.class);
         JobService jobServiceMock = mock(JobService.class);
         when(blockMock.getType()).thenReturn(material);
+        when(playerMock.getUniqueId()).thenReturn(playerId);
         when(jobServiceMock.getJobReward("break", materialName)).thenReturn(jobRewardDto);
+        when(jobServiceMock.addExperience(playerId, UUID.fromString(jobRewardDto.jobId()), 1)).thenReturn(
+            new AddExperienceResult("Test Job 1", 3, true)
+        );
 
         BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockMock, playerMock);
         JobListener sut = new JobListener(economyMock, jobServiceMock);
@@ -80,6 +86,9 @@ public class JobListenerTest {
         when(blockMock.getType()).thenReturn(material);
         when(playerMock.getUniqueId()).thenReturn(playerId);
         when(jobServiceMock.getJobReward("break", materialName)).thenReturn(jobRewardDto);
+        when(jobServiceMock.addExperience(playerId, UUID.fromString(jobRewardDto.jobId()), 1)).thenReturn(
+            new AddExperienceResult("Test Job 1", 3, true)
+        );
 
         BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockMock, playerMock);
         JobListener sut = new JobListener(economyMock, jobServiceMock);
@@ -145,6 +154,44 @@ public class JobListenerTest {
             any(UUID.class),
             any(Integer.class)
         );
+    }
+
+    @Test
+    @Tag("Unit")
+    public void onBreakAction_WithJobRewardFoundAndLevelUp_ShouldSendMessageToPlayer() {
+        // Arrange
+        Material material = Material.STONE;
+        String materialName = material.name().toLowerCase();
+        UUID playerId = UUID.randomUUID();
+        JobRewardDto jobRewardDto = new JobRewardDto(
+            "",
+            "de8ee82d-e988-4b6e-8dfd-8768415e4a0d",
+            "",
+            1,
+            materialName,
+            BigDecimal.TEN,
+            1
+        );
+
+        Block blockMock = mock(Block.class);
+        Player playerMock = mock(Player.class);
+        EconomyImpl economyMock = mock(EconomyImpl.class);
+        JobService jobServiceMock = mock(JobService.class);
+        when(blockMock.getType()).thenReturn(material);
+        when(playerMock.getUniqueId()).thenReturn(playerId);
+        when(jobServiceMock.getJobReward("break", materialName)).thenReturn(jobRewardDto);
+        when(jobServiceMock.addExperience(playerId, UUID.fromString(jobRewardDto.jobId()), 1)).thenReturn(
+            new AddExperienceResult("Test Job 1", 3, true)
+        );
+
+        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockMock, playerMock);
+        JobListener sut = new JobListener(economyMock, jobServiceMock);
+
+        // Act
+        sut.onBreakAction(blockBreakEvent);
+
+        // Assert
+        verify(playerMock, times(1)).sendMessage("Test Job 1 is now level 3");
     }
 
     @Test

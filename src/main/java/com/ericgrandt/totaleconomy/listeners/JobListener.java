@@ -2,6 +2,7 @@ package com.ericgrandt.totaleconomy.listeners;
 
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import com.ericgrandt.totaleconomy.services.JobService;
 import java.util.UUID;
 import org.bukkit.entity.Player;
@@ -27,16 +28,27 @@ public class JobListener implements Listener {
             return;
         }
 
-        addReward(event.getPlayer(), jobRewardDto);
+        Player player = event.getPlayer();
+        AddExperienceResult addExperienceResult = jobService.addExperience(
+            player.getUniqueId(),
+            UUID.fromString(jobRewardDto.jobId()),
+            jobRewardDto.experience()
+        );
+        economy.depositPlayer(player, jobRewardDto.money().doubleValue());
+
+        if (addExperienceResult.leveledUp()) {
+            player.sendMessage(
+                String.format(
+                    "%s is now level %s",
+                    addExperienceResult.jobName(),
+                    addExperienceResult.level()
+                )
+            );
+        }
     }
 
     @EventHandler
     public void createJobExperienceOnPlayerJoin(PlayerJoinEvent event) {
         jobService.createJobExperienceForAccount(event.getPlayer().getUniqueId());
-    }
-
-    private void addReward(Player player, JobRewardDto jobRewardDto) {
-        economy.depositPlayer(player, jobRewardDto.money().doubleValue());
-        jobService.addExperience(player.getUniqueId(), UUID.fromString(jobRewardDto.jobId()), jobRewardDto.experience());
     }
 }

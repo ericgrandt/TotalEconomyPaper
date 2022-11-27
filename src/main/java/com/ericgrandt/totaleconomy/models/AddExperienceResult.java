@@ -1,4 +1,4 @@
 package com.ericgrandt.totaleconomy.models;
 
-public record AddExperienceResult(int level, boolean leveledUp) {
+public record AddExperienceResult(String jobName, int level, boolean leveledUp) {
 }

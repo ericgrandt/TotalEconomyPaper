@@ -2,6 +2,7 @@ package com.ericgrandt.totaleconomy.services;
 
 import com.ericgrandt.totaleconomy.data.JobData;
 import com.ericgrandt.totaleconomy.data.dto.JobActionDto;
+import com.ericgrandt.totaleconomy.data.dto.JobDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
@@ -57,10 +58,11 @@ public class JobService {
         try {
             Optional<JobExperienceDto> jobExperienceDtoOptional = getJobExperienceDto(accountId, jobId);
             if (jobExperienceDtoOptional.isEmpty()) {
-                return new AddExperienceResult(-1, false);
+                return new AddExperienceResult("", -1, false);
             }
 
             JobExperienceDto jobExperienceDto = jobExperienceDtoOptional.get();
+            JobDto jobDto = jobData.getJob(jobId);
             int currentExperience = jobExperienceDto.experience();
             int newExperience = jobExperienceDto.experience() + experienceToAdd;
             int currentLevel = calculateLevelFromExperience(currentExperience);
@@ -68,7 +70,7 @@ public class JobService {
 
             jobData.updateExperienceForJob(accountId, jobId, newExperience);
 
-            return new AddExperienceResult(newLevel, newLevel > currentLevel);
+            return new AddExperienceResult(jobDto.jobName(), newLevel, newLevel > currentLevel);
         } catch (SQLException e) {
             logger.log(
                 Level.SEVERE,
@@ -80,7 +82,7 @@ public class JobService {
                 ),
                 e
             );
-            return new AddExperienceResult(-1, false);
+            return new AddExperienceResult("", -1, false);
         }
     }
 
