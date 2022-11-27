@@ -1,7 +1,9 @@
 package com.ericgrandt.totaleconomy.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -19,6 +21,8 @@ import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -200,13 +204,13 @@ public class JobServiceTest {
         // Arrange
         UUID accountId = UUID.randomUUID();
         UUID jobId = UUID.randomUUID();
-        int experienceToAdd = 1;
         JobExperienceDto jobExperienceDto = new JobExperienceDto(
             "id",
             accountId.toString(),
             jobId.toString(),
             10
         );
+        int experienceToAdd = 1;
 
         JobData jobDataMock = mock(JobData.class);
         when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(jobExperienceDto);
@@ -226,33 +230,65 @@ public class JobServiceTest {
 
     @Test
     @Tag("Unit")
-    public void addExperience_WithJobExperienceNotFoundForAccount_ShouldNotUpdateExperience() throws SQLException {
+    public void addExperience_WithJobExperienceFoundForAccountAndNoLevelUp_ShouldReturnProperResponse() throws SQLException {
+        // Arrange
         UUID accountId = UUID.randomUUID();
         UUID jobId = UUID.randomUUID();
+        JobExperienceDto jobExperienceDto = new JobExperienceDto(
+            "id",
+            accountId.toString(),
+            jobId.toString(),
+            10
+        );
         int experienceToAdd = 1;
 
         JobData jobDataMock = mock(JobData.class);
-        when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(null);
+        when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(jobExperienceDto);
 
         JobService sut = new JobService(loggerMock, jobDataMock);
 
         // Act
-        sut.addExperience(accountId, jobId, experienceToAdd);
+        AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
+        AddExperienceResult expected = new AddExperienceResult(1, false);
 
         // Assert
-        verify(jobDataMock, times(0)).updateExperienceForJob(
-            any(UUID.class),
-            any(UUID.class),
-            any(Integer.class)
-        );
+        assertEquals(expected, actual);
     }
 
     @Test
     @Tag("Unit")
-    public void addExperience_WithJobExperienceNotFoundForAccount_ShouldLogWarning() throws SQLException {
+    public void addExperience_WithJobExperienceFoundForAccountAndLevelUp_ShouldReturnProperResponse() throws SQLException {
+        // Arrange
         UUID accountId = UUID.randomUUID();
         UUID jobId = UUID.randomUUID();
-        int experienceToAdd = 1;
+        JobExperienceDto jobExperienceDto = new JobExperienceDto(
+            "id",
+            accountId.toString(),
+            jobId.toString(),
+            10
+        );
+        int experienceToAdd = 100;
+
+        JobData jobDataMock = mock(JobData.class);
+        when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(jobExperienceDto);
+
+        JobService sut = new JobService(loggerMock, jobDataMock);
+
+        // Act
+        AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
+        AddExperienceResult expected = new AddExperienceResult(2, true);
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void addExperience_WithJobExperienceNotFoundForAccount_ShouldReturnProperResponse() throws SQLException {
+        // Arrange
+        UUID accountId = UUID.randomUUID();
+        UUID jobId = UUID.randomUUID();
+        int experienceToAdd = 100;
 
         JobData jobDataMock = mock(JobData.class);
         when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(null);
@@ -260,28 +296,36 @@ public class JobServiceTest {
         JobService sut = new JobService(loggerMock, jobDataMock);
 
         // Act
-        sut.addExperience(accountId, jobId, experienceToAdd);
+        AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
+        AddExperienceResult expected = new AddExperienceResult(-1, false);
 
         // Assert
-        verify(loggerMock, times(1)).log(
-            eq(Level.WARNING),
-            eq(String.format(
-                "[Total Economy] No job experience entry found for user (accountId: %s, jobId: %s)",
-                accountId,
-                jobId
-            ))
-        );
+        assertEquals(expected, actual);
     }
 
     @Test
     @Tag("Unit")
     public void addExperience_WithSQLException_ShouldLogError() throws SQLException {
+        // Arrange
         UUID accountId = UUID.randomUUID();
         UUID jobId = UUID.randomUUID();
-        int experienceToAdd = 1;
+        JobExperienceDto jobExperienceDto = new JobExperienceDto(
+            "id",
+            accountId.toString(),
+            jobId.toString(),
+            10
+        );
+        int experienceToAdd = 100;
 
         JobData jobDataMock = mock(JobData.class);
-        when(jobDataMock.getExperienceForJob(accountId, jobId)).thenThrow(SQLException.class);
+        when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(jobExperienceDto);
+        when(
+            jobDataMock.updateExperienceForJob(
+                accountId,
+                jobId,
+                jobExperienceDto.experience() + experienceToAdd
+            )
+        ).thenThrow(SQLException.class);
 
         JobService sut = new JobService(loggerMock, jobDataMock);
 
@@ -292,12 +336,91 @@ public class JobServiceTest {
         verify(loggerMock, times(1)).log(
             eq(Level.SEVERE),
             eq(String.format(
-                "[Total Economy] Error calling addExperience (accountId: %s, jobId: %s, experience: %s)",
+                "[Total Economy] Error calling addExperience (accountId: %s, jobId: %s, experienceToAdd: %s)",
                 accountId,
                 jobId,
                 experienceToAdd
             )),
             any(SQLException.class)
         );
+    }
+
+    @Test
+    @Tag("Unit")
+    public void addExperience_WithSQLException_ShouldReturnProperResponse() throws SQLException {
+        // Arrange
+        UUID accountId = UUID.randomUUID();
+        UUID jobId = UUID.randomUUID();
+        JobExperienceDto jobExperienceDto = new JobExperienceDto(
+            "id",
+            accountId.toString(),
+            jobId.toString(),
+            10
+        );
+        int experienceToAdd = 100;
+
+        JobData jobDataMock = mock(JobData.class);
+        when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(jobExperienceDto);
+        when(
+            jobDataMock.updateExperienceForJob(
+                accountId,
+                jobId,
+                jobExperienceDto.experience() + experienceToAdd
+            )
+        ).thenThrow(SQLException.class);
+
+        JobService sut = new JobService(loggerMock, jobDataMock);
+
+        // Act
+        AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
+        AddExperienceResult expected = new AddExperienceResult(-1, false);
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void calculateLevelFromExperience_WithExperienceOf49_ShouldReturnOne() {
+        // Arrange
+        JobService sut = new JobService(loggerMock, mock(JobData.class));
+
+
+        // Act
+        int actual = sut.calculateLevelFromExperience(49);
+        int expected = 1;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void calculateLevelFromExperience_WithExperienceOf50_ShouldReturnTwo() {
+        // Arrange
+        JobService sut = new JobService(loggerMock, mock(JobData.class));
+
+
+        // Act
+        int actual = sut.calculateLevelFromExperience(50);
+        int expected = 2;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void calculateLevelFromExperience_WithExperienceOf4900_ShouldReturnTen() {
+        // Arrange
+        JobService sut = new JobService(loggerMock, mock(JobData.class));
+
+
+        // Act
+        int actual = sut.calculateLevelFromExperience(4900);
+        int expected = 10;
+
+        // Assert
+        assertEquals(expected, actual);
     }
 }

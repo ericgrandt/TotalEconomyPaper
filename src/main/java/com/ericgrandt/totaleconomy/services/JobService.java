@@ -4,7 +4,9 @@ import com.ericgrandt.totaleconomy.data.JobData;
 import com.ericgrandt.totaleconomy.data.dto.JobActionDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
+import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,37 +53,43 @@ public class JobService {
         }
     }
 
-    public void addExperience(UUID accountId, UUID jobId, int experienceToAdd) {
+    public AddExperienceResult addExperience(UUID accountId, UUID jobId, int experienceToAdd) {
         try {
-            JobExperienceDto jobExperienceDto = jobData.getExperienceForJob(accountId, jobId);
-            if (jobExperienceDto == null) {
-                logger.log(
-                    Level.WARNING,
-                    String.format(
-                        "[Total Economy] No job experience entry found for user (accountId: %s, jobId: %s)",
-                        accountId,
-                        jobId
-                    )
-                );
-                return;
+            Optional<JobExperienceDto> jobExperienceDtoOptional = getJobExperienceDto(accountId, jobId);
+            if (jobExperienceDtoOptional.isEmpty()) {
+                return new AddExperienceResult(-1, false);
             }
 
-            jobData.updateExperienceForJob(
-                accountId,
-                jobId,
-                jobExperienceDto.experience() + experienceToAdd
-            );
+            JobExperienceDto jobExperienceDto = jobExperienceDtoOptional.get();
+            int currentExperience = jobExperienceDto.experience();
+            int newExperience = jobExperienceDto.experience() + experienceToAdd;
+            int currentLevel = calculateLevelFromExperience(currentExperience);
+            int newLevel = calculateLevelFromExperience(newExperience);
+
+            jobData.updateExperienceForJob(accountId, jobId, newExperience);
+
+            return new AddExperienceResult(newLevel, newLevel > currentLevel);
         } catch (SQLException e) {
             logger.log(
                 Level.SEVERE,
                 String.format(
-                    "[Total Economy] Error calling addExperience (accountId: %s, jobId: %s, experience: %s)",
+                    "[Total Economy] Error calling addExperience (accountId: %s, jobId: %s, experienceToAdd: %s)",
                     accountId,
                     jobId,
                     experienceToAdd
                 ),
                 e
             );
+            return new AddExperienceResult(-1, false);
         }
+    }
+
+    public int calculateLevelFromExperience(int experience) {
+        // Inverse of: 49 * (level_to_get ^ 2)
+        return (int) Math.ceil(Math.sqrt(experience) / 7);
+    }
+
+    private Optional<JobExperienceDto> getJobExperienceDto(UUID accountId, UUID jobId) throws SQLException {
+        return Optional.ofNullable(jobData.getExperienceForJob(accountId, jobId));
     }
 }
