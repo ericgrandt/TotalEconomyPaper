@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS te_currency (
     name_singular VARCHAR(50) NOT NULL UNIQUE,
     name_plural VARCHAR(50) NOT NULL UNIQUE,
     symbol VARCHAR(2) NOT NULL,
-    num_fraction_digits INT NOT NULL DEFAULT 0,
+    num_fraction_digits INT NOT NULL DEFAULT 2,
     is_default BOOL NOT NULL
 );
 
