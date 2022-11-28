@@ -349,13 +349,13 @@ public class JobDataTest {
         JobData sut = new JobData(databaseMock);
 
         // Act
-        JobRewardDto actual = sut.getJobReward("fbc60ff9-d7e2-4704-9460-6edc2e7b6066", "minecraft:coal_ore");
+        JobRewardDto actual = sut.getJobReward("fbc60ff9-d7e2-4704-9460-6edc2e7b6066", "coal_ore");
         JobRewardDto expected = new JobRewardDto(
             "07ac5e1f-39ef-46a8-ad81-a4bc1facc090",
             "a56a5842-1351-4b73-a021-bcd531260cd1",
             "fbc60ff9-d7e2-4704-9460-6edc2e7b6066",
             1,
-            "minecraft:coal_ore",
+            "coal_ore",
             BigDecimal.valueOf(0.50).setScale(2, RoundingMode.DOWN),
             1
         );

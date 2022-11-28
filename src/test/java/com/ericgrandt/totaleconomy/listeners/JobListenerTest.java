@@ -1,17 +1,30 @@
 package com.ericgrandt.totaleconomy.listeners;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ericgrandt.totaleconomy.TestUtils;
+import com.ericgrandt.totaleconomy.data.AccountData;
+import com.ericgrandt.totaleconomy.data.BalanceData;
+import com.ericgrandt.totaleconomy.data.Database;
+import com.ericgrandt.totaleconomy.data.JobData;
+import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
+import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
+import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import com.ericgrandt.totaleconomy.services.JobService;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.SQLException;
 import java.util.UUID;
+import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -20,10 +33,14 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class JobListenerTest {
+    @Mock
+    private Logger loggerMock;
+
     @Test
     @Tag("Unit")
     public void onBreakAction_WithJobRewardFound_ShouldDepositMoney() {
@@ -212,5 +229,65 @@ public class JobListenerTest {
 
         // Assert
         verify(jobServiceMock, times(1)).createJobExperienceForAccount(playerId);
+    }
+
+    @Test
+    @Tag("Integration")
+    public void onBreakAction_WithJobReward_ShouldRewardExperienceAndMoney() throws SQLException {
+        // Arrange
+        TestUtils.resetDb();
+        TestUtils.seedCurrencies();
+        TestUtils.seedDefaultBalances();
+        TestUtils.seedAccounts();
+        TestUtils.seedJobs();
+        TestUtils.seedJobActions();
+        TestUtils.seedJobRewards();
+        TestUtils.seedJobExperience();
+
+        CurrencyDto currencyMock = mock(CurrencyDto.class);
+        Database databaseMock = mock(Database.class);
+        Block blockMock = mock(Block.class);
+        Player playerMock = mock(Player.class);
+        UUID playerId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
+        when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
+        when(blockMock.getType()).thenReturn(Material.COAL_ORE);
+        when(playerMock.getUniqueId()).thenReturn(playerId);
+
+        AccountData accountData = new AccountData(databaseMock);
+        BalanceData balanceData = new BalanceData(databaseMock);
+        JobData jobData = new JobData(databaseMock);
+        JobService jobService = new JobService(loggerMock, jobData);
+        EconomyImpl economy = new EconomyImpl(
+            loggerMock,
+            true,
+            currencyMock,
+            accountData,
+            balanceData
+        );
+
+        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockMock, playerMock);
+        JobListener sut = new JobListener(economy, jobService);
+
+        // Act
+        sut.onBreakAction(blockBreakEvent);
+
+        // Assert
+        BalanceDto actualBalance = TestUtils.getBalanceForAccountId(playerId, 1);
+        BalanceDto expectedBalance = new BalanceDto(
+            "",
+            "",
+            1,
+            BigDecimal.valueOf(50.50).setScale(2, RoundingMode.DOWN)
+        );
+        assertNotNull(actualBalance);
+        assertEquals(expectedBalance.getBalance(), actualBalance.getBalance());
+
+        JobExperienceDto actualExperience = TestUtils.getExperienceForJob(
+            playerId,
+            UUID.fromString("a56a5842-1351-4b73-a021-bcd531260cd1")
+        );
+        JobExperienceDto expectedExperience = new JobExperienceDto("", "", "", 51);
+        assertNotNull(actualExperience);
+        assertEquals(expectedExperience.experience(), actualExperience.experience());
     }
 }
