@@ -2,6 +2,7 @@ package com.ericgrandt.totaleconomy.listeners;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -23,6 +24,8 @@ import com.ericgrandt.totaleconomy.services.JobService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 import org.bukkit.Material;
@@ -289,5 +292,50 @@ public class JobListenerTest {
         JobExperienceDto expectedExperience = new JobExperienceDto("", "", "", 51);
         assertNotNull(actualExperience);
         assertEquals(expectedExperience.experience(), actualExperience.experience());
+    }
+
+    @Test
+    @Tag("Integration")
+    public void createJobExperienceOnPlayerJoin_ShouldCreateRows() throws SQLException {
+        // Arrange
+        TestUtils.resetDb();
+        TestUtils.seedCurrencies();
+        TestUtils.seedDefaultBalances();
+        TestUtils.seedAccounts();
+        TestUtils.seedJobs();
+
+        Database databaseMock = mock(Database.class);
+        Player playerMock = mock(Player.class);
+        UUID playerId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
+        when(playerMock.getUniqueId()).thenReturn(playerId);
+        when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
+
+        JobData jobData = new JobData(databaseMock);
+        JobService jobService = new JobService(loggerMock, jobData);
+        PlayerJoinEvent event = new PlayerJoinEvent(playerMock, "");
+        JobListener sut = new JobListener(mock(EconomyImpl.class), jobService);
+
+        // Act
+        sut.createJobExperienceOnPlayerJoin(event);
+
+        List<JobExperienceDto> actual = TestUtils.getExperienceForJobs(playerId);
+        List<JobExperienceDto> expected = Arrays.asList(
+            new JobExperienceDto(
+                "",
+                "62694fb0-07cc-4396-8d63-4f70646d75f0",
+                "a56a5842-1351-4b73-a021-bcd531260cd1",
+                0
+            ),
+            new JobExperienceDto(
+                "",
+                "62694fb0-07cc-4396-8d63-4f70646d75f0",
+                "858febd0-7122-4ea4-b270-a69a4b6a53a4",
+                0
+            )
+        );
+
+        // Arrange
+        assertEquals(2, actual.size());
+        assertTrue(actual.containsAll(expected));
     }
 }

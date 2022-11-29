@@ -18,7 +18,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Tag;
@@ -409,16 +409,13 @@ public class JobDataTest {
         sut.createJobExperienceRows(accountId);
 
         List<JobExperienceDto> actual = TestUtils.getExperienceForJobs(accountId);
-        List<JobExperienceDto> expected = new ArrayList<>();
-        expected.add(
+        List<JobExperienceDto> expected = Arrays.asList(
             new JobExperienceDto(
                 "",
                 accountId.toString(),
                 "a56a5842-1351-4b73-a021-bcd531260cd1",
                 0
-            )
-        );
-        expected.add(
+            ),
             new JobExperienceDto(
                 "",
                 accountId.toString(),
@@ -429,7 +426,6 @@ public class JobDataTest {
 
         // Assert
         assertEquals(2, actual.size());
-        assertEquals(expected.size(), actual.size());
         assertTrue(actual.containsAll(expected));
     }
 
