@@ -1,5 +1,6 @@
 package com.ericgrandt.totaleconomy;
 
+import com.ericgrandt.totaleconomy.data.dto.AccountDto;
 import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.zaxxer.hikari.HikariConfig;
@@ -11,6 +12,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.apache.ibatis.jdbc.ScriptRunner;
 
@@ -19,7 +22,7 @@ public class TestUtils {
     private static final HikariDataSource ds;
 
     static {
-        config.setJdbcUrl("jdbc:h2:mem:totaleconomy");
+        config.setJdbcUrl("jdbc:h2:mem:totaleconomy;MODE=MySQL");
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
@@ -75,31 +78,56 @@ public class TestUtils {
 
     public static void seedDefaultBalances() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
-            String insertDefaultBalance1 = "INSERT INTO te_default_balance\n"
+            String insertDefaultBalance = "INSERT INTO te_default_balance\n"
                 + "VALUES('05231a59-b6fa-4d57-8450-5bd07f148a98', 1, 100.50);";
 
             Statement statement = conn.createStatement();
-            statement.execute(insertDefaultBalance1);
+            statement.execute(insertDefaultBalance);
         }
     }
 
     public static void seedJobs() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
-            String insertDefaultBalance1 = "INSERT INTO te_job "
-                + "VALUES('a56a5842-1351-4b73-a021-bcd531260cd1', 'Test Job');";
+            String insertJob1 = "INSERT INTO te_job VALUES('a56a5842-1351-4b73-a021-bcd531260cd1', 'Test Job 1');";
+            String insertJob2 = "INSERT INTO te_job VALUES('858febd0-7122-4ea4-b270-a69a4b6a53a4', 'Test Job 2');";
 
             Statement statement = conn.createStatement();
-            statement.execute(insertDefaultBalance1);
+            statement.execute(insertJob1);
+            statement.execute(insertJob2);
         }
     }
 
     public static void seedJobExperience() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
-            String insertDefaultBalance1 = "INSERT INTO te_job_experience "
+            String insertJobExperience1 = "INSERT INTO te_job_experience "
                 + "VALUES('748af95b-32a0-45c2-bfdc-9e87c023acdf', '62694fb0-07cc-4396-8d63-4f70646d75f0', 'a56a5842-1351-4b73-a021-bcd531260cd1', 50);";
+            String insertJobExperience2 = "INSERT INTO te_job_experience "
+                + "VALUES('6cebc95b-7743-4f63-92c6-0fd0538d8b0c', '62694fb0-07cc-4396-8d63-4f70646d75f0', '858febd0-7122-4ea4-b270-a69a4b6a53a4', 10);";
 
             Statement statement = conn.createStatement();
-            statement.execute(insertDefaultBalance1);
+            statement.execute(insertJobExperience1);
+            statement.execute(insertJobExperience2);
+        }
+    }
+
+    public static void seedJobActions() throws SQLException {
+        try (Connection conn = TestUtils.getConnection()) {
+            String insertJobAction = "INSERT INTO te_job_action "
+                + "VALUES('fbc60ff9-d7e2-4704-9460-6edc2e7b6066', 'break');";
+
+            Statement statement = conn.createStatement();
+            statement.execute(insertJobAction);
+        }
+    }
+
+    public static void seedJobRewards() throws SQLException {
+        try (Connection conn = TestUtils.getConnection()) {
+            String insertJobReward = "INSERT INTO te_job_reward "
+                + "VALUES('07ac5e1f-39ef-46a8-ad81-a4bc1facc090', 'a56a5842-1351-4b73-a021-bcd531260cd1', "
+                + "'fbc60ff9-d7e2-4704-9460-6edc2e7b6066', 1, 'coal_ore', 0.50, 1);";
+
+            Statement statement = conn.createStatement();
+            statement.execute(insertJobReward);
         }
     }
 
@@ -111,22 +139,48 @@ public class TestUtils {
             String deleteDefaultBalances = "DELETE FROM te_default_balance";
             String deleteJobs = "DELETE FROM te_job";
             String deleteJobExperience = "DELETE FROM te_job_experience";
+            String deleteJobActions = "DELETE FROM te_job_action";
+            String deleteJobRewards = "DELETE FROM te_job_reward";
 
             Statement statement = conn.createStatement();
             statement.execute(deleteCurrencies);
             statement.execute(deleteUsers);
             statement.execute(deleteBalances);
+            statement.execute(deleteDefaultBalances);
             statement.execute(deleteJobs);
             statement.execute(deleteJobExperience);
+            statement.execute(deleteJobActions);
+            statement.execute(deleteJobRewards);
         }
     }
 
-    public static BalanceDto getBalanceForAccountId(UUID accountUUID, int currencyId) throws SQLException {
+    public static AccountDto getAccount(UUID accountId) throws SQLException {
+        String query = "SELECT * FROM te_account WHERE id = ?";
+
+        try (Connection conn = TestUtils.getConnection()) {
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, accountId.toString());
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return new AccountDto(
+                            rs.getString("id"),
+                            rs.getTimestamp("created")
+                        );
+                    }
+
+                    return null;
+                }
+            }
+        }
+    }
+
+    public static BalanceDto getBalanceForAccountId(UUID accountId, int currencyId) throws SQLException {
         String query = "SELECT * FROM te_balance WHERE account_id = ? AND currency_id = ?";
 
         try (Connection conn = TestUtils.getConnection()) {
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                stmt.setString(1, accountUUID.toString());
+                stmt.setString(1, accountId.toString());
                 stmt.setInt(2, currencyId);
 
                 try (ResultSet rs = stmt.executeQuery()) {
@@ -164,6 +218,32 @@ public class TestUtils {
                     }
 
                     return null;
+                }
+            }
+        }
+    }
+
+    public static List<JobExperienceDto> getExperienceForJobs(UUID accountId) throws SQLException {
+        String query = "SELECT account_id, job_id, experience FROM te_job_experience WHERE account_id = ?";
+
+        try (Connection conn = TestUtils.getConnection()) {
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, accountId.toString());
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    List<JobExperienceDto> jobExperienceDtos = new ArrayList<>();
+                    while (rs.next()) {
+                        jobExperienceDtos.add(
+                            new JobExperienceDto(
+                                "",
+                                rs.getString("account_id"),
+                                rs.getString("job_id"),
+                                rs.getInt("experience")
+                            )
+                        );
+                    }
+
+                    return jobExperienceDtos;
                 }
             }
         }

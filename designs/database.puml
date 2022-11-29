@@ -52,7 +52,7 @@ entity te_job_reward {
     * job_id : varchar(36) <<FK>>
     * job_action_id : varchar(36) <<FK>>
     * currency_id : int <<FK>>
-    * object_id : varchar(100)
+    * material : varchar(100)
     * money : decimal(38, 2)
     * experience : int unsigned
 }
