@@ -16,8 +16,10 @@ import com.ericgrandt.totaleconomy.data.dto.JobDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
+import com.ericgrandt.totaleconomy.models.JobExperience;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -150,6 +152,35 @@ public class JobServiceTest {
             ),
             any(SQLException.class)
         );
+    }
+
+    @Test
+    @Tag("Unit")
+    public void getExperienceForAllJobs_WithSuccess_ShouldReturnListOfJobExperienceRecords() throws SQLException {
+        // Arrange
+        UUID accountId = UUID.randomUUID();
+        UUID jobId = UUID.randomUUID();
+
+        JobData jobDataMock = mock(JobData.class);
+        when(jobDataMock.getExperienceForAllJobs(accountId)).thenReturn(
+            List.of(
+                new JobExperienceDto("id", accountId.toString(), jobId.toString(), 10)
+            )
+        );
+        when(jobDataMock.getJob(jobId)).thenReturn(
+            new JobDto(jobId.toString(), "jobName")
+        );
+
+        JobService sut = new JobService(loggerMock, jobDataMock);
+
+        // Act
+        List<JobExperience> actual = sut.getExperienceForAllJobs(accountId);
+        List<JobExperience> expected = List.of(
+            new JobExperience("jobName", 10, 50, 1)
+        );
+
+        // Assert
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -389,7 +420,6 @@ public class JobServiceTest {
         // Arrange
         JobService sut = new JobService(loggerMock, mock(JobData.class));
 
-
         // Act
         int actual = sut.calculateLevelFromExperience(49);
         int expected = 1;
@@ -404,7 +434,6 @@ public class JobServiceTest {
         // Arrange
         JobService sut = new JobService(loggerMock, mock(JobData.class));
 
-
         // Act
         int actual = sut.calculateLevelFromExperience(50);
         int expected = 2;
@@ -418,7 +447,6 @@ public class JobServiceTest {
     public void calculateLevelFromExperience_WithExperienceOf4900_ShouldReturnTen() {
         // Arrange
         JobService sut = new JobService(loggerMock, mock(JobData.class));
-
 
         // Act
         int actual = sut.calculateLevelFromExperience(4900);
