@@ -8,6 +8,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 public class JobData {
@@ -62,6 +65,33 @@ public class JobData {
         }
 
         return null;
+    }
+
+    public List<JobExperienceDto> getExperienceForAllJobs(UUID accountId) throws SQLException {
+        String getDefaultBalanceQuery = "SELECT * FROM te_job_experience WHERE account_id = ?";
+
+        try (
+            Connection conn = database.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
+        ) {
+            stmt.setString(1, accountId.toString());
+
+            List<JobExperienceDto> jobExperienceDtos = new ArrayList<>();
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    jobExperienceDtos.add(
+                        new JobExperienceDto(
+                            rs.getString("id"),
+                            rs.getString("account_id"),
+                            rs.getString("job_id"),
+                            rs.getInt("experience")
+                        )
+                    );
+                }
+            }
+
+            return jobExperienceDtos;
+        }
     }
 
     public JobRewardDto getJobReward(String jobActionId, String material) throws SQLException {
