@@ -72,7 +72,7 @@ public class TotalEconomy extends JavaPlugin implements Listener {
         this.getCommand("pay").setExecutor(new PayCommand(new BukkitWrapper(), economy));
 
         if (config.getBoolean("features.jobs")) {
-            this.getCommand("job").setExecutor(new JobCommand(new JobService(logger, new JobData(database))));
+            this.getCommand("job").setExecutor(new JobCommand(logger, new JobService(logger, new JobData(database))));
         }
     }
 

@@ -4,6 +4,8 @@ import com.ericgrandt.totaleconomy.models.JobExperience;
 import com.ericgrandt.totaleconomy.services.JobService;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -15,9 +17,11 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class JobCommand implements CommandExecutor {
+    private final Logger logger;
     private final JobService jobService;
 
-    public JobCommand(JobService jobService) {
+    public JobCommand(Logger logger, JobService jobService) {
+        this.logger = logger;
         this.jobService = jobService;
     }
 
@@ -45,7 +49,15 @@ public class JobCommand implements CommandExecutor {
 
             player.sendMessage(message.build());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            player.sendMessage(
+                Component.text("An error has occurred. Please contact an administrator.", NamedTextColor.RED)
+            );
+            logger.log(
+                Level.SEVERE,
+                "An exception occurred during the handling of the job command.",
+                e
+            );
+            return false;
         }
 
         return true;

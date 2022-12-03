@@ -2,6 +2,8 @@ package com.ericgrandt.totaleconomy.commands;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -12,6 +14,8 @@ import com.ericgrandt.totaleconomy.services.JobService;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -20,13 +24,20 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class JobCommandTest {
+    @Mock
+    private Logger loggerMock;
+
     @Test
     @Tag("Unit")
     public void onCommand_WithNonPlayerSender_ShouldReturnFalse() {
         // Arrange
-        JobCommand sut = new JobCommand(mock(JobService.class));
+        JobCommand sut = new JobCommand(loggerMock, mock(JobService.class));
 
         // Act
         boolean actual = sut.onCommand(
@@ -44,7 +55,7 @@ public class JobCommandTest {
     @Tag("Unit")
     public void onCommand_WithSuccess_ShouldReturnTrue() {
         // Arrange
-        JobCommand sut = new JobCommand(mock(JobService.class));
+        JobCommand sut = new JobCommand(loggerMock, mock(JobService.class));
 
         // Act
         boolean actual = sut.onCommand(
@@ -73,7 +84,7 @@ public class JobCommandTest {
         when(playerMock.getUniqueId()).thenReturn(playerUuid);
         when(jobServiceMock.getExperienceForAllJobs(playerUuid)).thenReturn(jobExperienceList);
 
-        JobCommand sut = new JobCommand(jobServiceMock);
+        JobCommand sut = new JobCommand(loggerMock, jobServiceMock);
 
         // Act
         sut.onCommand(
@@ -99,13 +110,82 @@ public class JobCommandTest {
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithException_ShouldSendPlayerMessage() {
+    public void onCommand_WithException_ShouldReturnFalse() throws SQLException {
+        // Arrange
+        UUID playerUuid = UUID.randomUUID();
 
+        Player playerMock = mock(Player.class);
+        JobService jobServiceMock = mock(JobService.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUuid);
+        when(jobServiceMock.getExperienceForAllJobs(playerUuid)).thenThrow(SQLException.class);
+
+        JobCommand sut = new JobCommand(loggerMock, jobServiceMock);
+
+        // Act
+        boolean actual = sut.onCommand(
+            playerMock,
+            mock(Command.class),
+            "",
+            null
+        );
+
+        // Assert
+        assertFalse(actual);
     }
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithException_ShouldLogException() {
+    public void onCommand_WithException_ShouldSendPlayerMessage() throws SQLException {
+        // Arrange
+        UUID playerUuid = UUID.randomUUID();
 
+        Player playerMock = mock(Player.class);
+        JobService jobServiceMock = mock(JobService.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUuid);
+        when(jobServiceMock.getExperienceForAllJobs(playerUuid)).thenThrow(SQLException.class);
+
+        JobCommand sut = new JobCommand(loggerMock, jobServiceMock);
+
+        // Act
+        sut.onCommand(
+            playerMock,
+            mock(Command.class),
+            "",
+            null
+        );
+
+        // Assert
+        verify(playerMock).sendMessage(
+            Component.text("An error has occurred. Please contact an administrator.", NamedTextColor.RED)
+        );
+    }
+
+    @Test
+    @Tag("Unit")
+    public void onCommand_WithException_ShouldLogException() throws SQLException {
+        // Arrange
+        UUID playerUuid = UUID.randomUUID();
+
+        Player playerMock = mock(Player.class);
+        JobService jobServiceMock = mock(JobService.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUuid);
+        when(jobServiceMock.getExperienceForAllJobs(playerUuid)).thenThrow(SQLException.class);
+
+        JobCommand sut = new JobCommand(loggerMock, jobServiceMock);
+
+        // Act
+        sut.onCommand(
+            playerMock,
+            mock(Command.class),
+            "",
+            null
+        );
+
+        // Assert
+        verify(loggerMock).log(
+            eq(Level.SEVERE),
+            eq("An exception occurred during the handling of the job command."),
+            any(SQLException.class)
+        );
     }
 }
