@@ -1,6 +1,7 @@
 package com.ericgrandt.totaleconomy;
 
 import com.ericgrandt.totaleconomy.commands.BalanceCommand;
+import com.ericgrandt.totaleconomy.commands.JobCommand;
 import com.ericgrandt.totaleconomy.commands.PayCommand;
 import com.ericgrandt.totaleconomy.data.AccountData;
 import com.ericgrandt.totaleconomy.data.BalanceData;
@@ -71,7 +72,7 @@ public class TotalEconomy extends JavaPlugin implements Listener {
         this.getCommand("pay").setExecutor(new PayCommand(new BukkitWrapper(), economy));
 
         if (config.getBoolean("features.jobs")) {
-            // Register job commands
+            this.getCommand("job").setExecutor(new JobCommand(new JobService(logger, new JobData(database))));
         }
     }
 
