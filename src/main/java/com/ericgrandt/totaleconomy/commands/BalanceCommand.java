@@ -16,12 +16,12 @@ public class BalanceCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (sender instanceof Player player) {
-            double balance = economy.getBalance(player);
-            player.sendMessage(economy.format(balance));
-            return true;
+        if (!(sender instanceof Player player)) {
+            return false;
         }
 
-        return false;
+        double balance = economy.getBalance(player);
+        player.sendMessage(economy.format(balance));
+        return true;
     }
 }

@@ -126,6 +126,58 @@ public class JobDataTest {
 
     @Test
     @Tag("Unit")
+    public void getExperienceForAllJobs_WithRowFound_ShouldReturnListOfJobExperienceDto() throws SQLException {
+        // Arrange
+        Database databaseMock = mock(Database.class);
+        Connection connectionMock = mock(Connection.class);
+        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
+        ResultSet resultSetMock = mock(ResultSet.class);
+        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
+        when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
+        when(resultSetMock.next()).thenReturn(true).thenReturn(false);
+        when(resultSetMock.getString("id")).thenReturn("id");
+        when(resultSetMock.getString("account_id")).thenReturn("accountId");
+        when(resultSetMock.getString("job_id")).thenReturn("jobId");
+        when(resultSetMock.getInt("experience")).thenReturn(10);
+
+        JobData sut = new JobData(databaseMock);
+
+        // Act
+        List<JobExperienceDto> actual = sut.getExperienceForAllJobs(UUID.randomUUID());
+        List<JobExperienceDto> expected = List.of(
+            new JobExperienceDto("id", "accountId", "jobId", 10)
+        );
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void getExperienceForAllJobs_WithNoRowFound_ShouldReturnAnEmptyList() throws SQLException {
+        // Arrange
+        Database databaseMock = mock(Database.class);
+        Connection connectionMock = mock(Connection.class);
+        PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
+        ResultSet resultSetMock = mock(ResultSet.class);
+        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
+        when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
+        when(resultSetMock.next()).thenReturn(false);
+
+        JobData sut = new JobData(databaseMock);
+
+        // Act
+        List<JobExperienceDto> actual = sut.getExperienceForAllJobs(UUID.randomUUID());
+        List<JobExperienceDto> expected = List.of();
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
     public void getJobReward_WithRowFound_ShouldReturnAJobRewardDto() throws SQLException {
         // Arrange
         Database databaseMock = mock(Database.class);
@@ -326,6 +378,44 @@ public class JobDataTest {
             "62694fb0-07cc-4396-8d63-4f70646d75f0",
             "a56a5842-1351-4b73-a021-bcd531260cd1",
             50
+        );
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Integration")
+    public void getExperienceForAllJobs_ShouldReturnAListOfJobExperienceDto() throws SQLException {
+        // Arrange
+        TestUtils.resetDb();
+        TestUtils.seedCurrencies();
+        TestUtils.seedAccounts();
+        TestUtils.seedJobs();
+        TestUtils.seedJobExperience();
+
+        UUID accountId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
+
+        Database databaseMock = mock(Database.class);
+        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+
+        JobData sut = new JobData(databaseMock);
+
+        // Act
+        List<JobExperienceDto> actual = sut.getExperienceForAllJobs(accountId);
+        List<JobExperienceDto> expected = List.of(
+            new JobExperienceDto(
+                "748af95b-32a0-45c2-bfdc-9e87c023acdf",
+                "62694fb0-07cc-4396-8d63-4f70646d75f0",
+                "a56a5842-1351-4b73-a021-bcd531260cd1",
+                50
+            ),
+            new JobExperienceDto(
+                "6cebc95b-7743-4f63-92c6-0fd0538d8b0c",
+                "62694fb0-07cc-4396-8d63-4f70646d75f0",
+                "858febd0-7122-4ea4-b270-a69a4b6a53a4",
+                10
+            )
         );
 
         // Assert
