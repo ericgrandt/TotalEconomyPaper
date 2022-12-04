@@ -9,6 +9,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ericgrandt.totaleconomy.TestUtils;
+import com.ericgrandt.totaleconomy.data.Database;
+import com.ericgrandt.totaleconomy.data.JobData;
 import com.ericgrandt.totaleconomy.models.JobExperience;
 import com.ericgrandt.totaleconomy.services.JobService;
 import java.sql.SQLException;
@@ -19,7 +22,9 @@ import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.Tag;
@@ -187,5 +192,44 @@ public class JobCommandTest {
             eq("An exception occurred during the handling of the job command."),
             any(SQLException.class)
         );
+    }
+
+    @Test
+    @Tag("Integration")
+    public void onCommand_ShouldSendMessageWithJobLevelsToPlayer() throws SQLException {
+        // Arrange
+        TestUtils.resetDb();
+        TestUtils.seedCurrencies();
+        TestUtils.seedAccounts();
+        TestUtils.seedJobs();
+        TestUtils.seedJobExperience();
+
+        UUID playerUuid = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
+
+        Database databaseMock = mock(Database.class);
+        CommandSender senderMock = mock(Player.class);
+        when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
+        when(((OfflinePlayer) senderMock).getUniqueId()).thenReturn(playerUuid);
+
+        JobData jobData = new JobData(databaseMock);
+        JobService jobService = new JobService(loggerMock, jobData);
+        JobCommand sut = new JobCommand(loggerMock, jobService);
+
+        // Act
+        boolean actual = sut.onCommand(senderMock, mock(Command.class), "", null);
+        Component expectedMessage = Component.empty()
+            .content("\n")
+            .append(Component.text("Test Job 1", NamedTextColor.GRAY, TextDecoration.BOLD))
+            .append(Component.text(" [LVL 2]", NamedTextColor.GRAY))
+            .append(Component.text(" [50/197 EXP]", NamedTextColor.GRAY))
+            .append(Component.newline())
+            .append(Component.text("Test Job 2", NamedTextColor.GRAY, TextDecoration.BOLD))
+            .append(Component.text(" [LVL 1]", NamedTextColor.GRAY))
+            .append(Component.text(" [10/50 EXP]", NamedTextColor.GRAY))
+            .append(Component.newline());
+
+        // Assert
+        verify(senderMock).sendMessage(expectedMessage);
+        assertTrue(actual);
     }
 }
