@@ -1,6 +1,7 @@
 ---
-layout: page
+layout: default
 title: Jobs
+has_children: true
 ---
 
 # Jobs
