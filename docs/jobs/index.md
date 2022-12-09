@@ -22,4 +22,4 @@ Each job reward must have a single action associated with it. They describe the 
 
 ## Modifying Existing Jobs
 
-A few jobs are created by default
+A few jobs are created by default, but can be modified to your liking.
