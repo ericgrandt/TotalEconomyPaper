@@ -112,7 +112,8 @@ public class JobService {
 
     public int calculateLevelFromExperience(int experience) {
         // Inverse of: 49 * (cur_level ^ 2)
-        return (int) Math.ceil(Math.sqrt(experience) / 7);
+        int level = (int) Math.ceil(Math.sqrt(experience) / 7);
+        return Math.max(level, 1);
     }
 
     private int calculateExperienceForNextLevel(int curLevel) {
