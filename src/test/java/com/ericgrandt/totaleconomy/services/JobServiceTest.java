@@ -455,4 +455,18 @@ public class JobServiceTest {
         // Assert
         assertEquals(expected, actual);
     }
+
+    @Test
+    @Tag("Unit")
+    public void calculateLevelFromExperience_WithExperienceOf0_ShouldReturnOne() {
+        // Arrange
+        JobService sut = new JobService(loggerMock, mock(JobData.class));
+
+        // Act
+        int actual = sut.calculateLevelFromExperience(0);
+        int expected = 1;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
 }
