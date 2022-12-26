@@ -14,7 +14,9 @@ import com.ericgrandt.totaleconomy.listeners.JobListener;
 import com.ericgrandt.totaleconomy.listeners.PlayerListener;
 import com.ericgrandt.totaleconomy.services.JobService;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
@@ -37,6 +39,19 @@ public class TotalEconomy extends JavaPlugin implements Listener {
             config.getString("database.user"),
             config.getString("database.password")
         );
+
+        try {
+            database.initDatabase();
+        } catch (SQLException | IOException e) {
+            logger.log(
+                Level.SEVERE,
+                "[Total Economy] Error calling initDatabase",
+                e
+            );
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         CurrencyData currencyData = new CurrencyData(database);
         CurrencyDto defaultCurrency;
 
@@ -68,11 +83,15 @@ public class TotalEconomy extends JavaPlugin implements Listener {
     }
 
     private void registerCommands() {
-        this.getCommand("balance").setExecutor(new BalanceCommand(economy));
-        this.getCommand("pay").setExecutor(new PayCommand(new BukkitWrapper(), economy));
+        Objects.requireNonNull(this.getCommand("balance")).setExecutor(new BalanceCommand(economy));
+        Objects.requireNonNull(this.getCommand("pay")).setExecutor(new PayCommand(new BukkitWrapper(), economy));
 
         if (config.getBoolean("features.jobs")) {
-            this.getCommand("job").setExecutor(new JobCommand(logger, new JobService(logger, new JobData(database))));
+            JobData jobData = new JobData(database);
+            JobService jobService = new JobService(logger, jobData);
+            JobCommand jobCommand = new JobCommand(logger, jobService);
+
+            Objects.requireNonNull(this.getCommand("job")).setExecutor(jobCommand);
         }
     }
 

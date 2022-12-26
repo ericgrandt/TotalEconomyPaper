@@ -1,6 +1,7 @@
 plugins {
     id("java")
     id("xyz.jpenilla.run-paper") version "1.0.6"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     checkstyle
 }
 
@@ -41,8 +42,22 @@ tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
 
-tasks {
-    runServer {
-        minecraftVersion("1.19.3")
+tasks.shadowJar {
+    archiveFileName.set("TotalEconomy-${version}.jar")
+    dependencies {
+        include(dependency("org.mybatis:mybatis"))
     }
+}
+
+tasks.jar {
+    enabled = false
+}
+
+tasks.build {
+    dependsOn(tasks.shadowJar)
+}
+
+tasks.runServer {
+    dependsOn(tasks.shadowJar)
+    minecraftVersion("1.19.3")
 }
