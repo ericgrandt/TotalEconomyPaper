@@ -2,7 +2,7 @@
 layout: default
 title: Lumberjack
 parent: Jobs
-nav_order: 2
+nav_order: 3
 ---
 
 # Lumberjack

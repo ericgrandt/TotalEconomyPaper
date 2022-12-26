@@ -2,7 +2,7 @@
 layout: default
 title: Creating Custom Jobs
 parent: Jobs
-nav_order: 3
+nav_order: 1
 ---
 
 # Creating Custom Jobs
@@ -29,3 +29,5 @@ For example, if you wanted to add a reward for stone, the query would look somet
 INSERT INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
 VALUES (YOUR_JOB_ID, TE_JOB_ACTION_ID, 1, 'stone', 0.10, 1);
 ```
+
+For a list of supported job actions, either consult the rows in the database (especially if you need the `id`) or the [documentation](https://ericgrandt.github.io/TotalEconomyPaper/jobs/#job-action).
