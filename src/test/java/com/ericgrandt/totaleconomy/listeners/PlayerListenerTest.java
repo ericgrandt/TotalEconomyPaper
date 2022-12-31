@@ -20,6 +20,8 @@ import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.junit.jupiter.api.Tag;
@@ -78,7 +80,7 @@ public class PlayerListenerTest {
         TestUtils.seedDefaultBalances();
         TestUtils.seedAccounts();
 
-        CurrencyDto currencyMock = mock(CurrencyDto.class);
+        CurrencyDto currencyDto = new CurrencyDto(0, "", "", "", 0, true);
         BalanceData balanceDataMock = mock(BalanceData.class);
         Database databaseMock = mock(Database.class);
         Player playerMock = mock(Player.class);
@@ -87,8 +89,8 @@ public class PlayerListenerTest {
         when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
 
         AccountData accountData = new AccountData(databaseMock);
-        EconomyImpl economy = new EconomyImpl(loggerMock, true, currencyMock, accountData, balanceDataMock);
-        PlayerJoinEvent event = new PlayerJoinEvent(playerMock, "");
+        EconomyImpl economy = new EconomyImpl(loggerMock, true, currencyDto, accountData, balanceDataMock);
+        PlayerJoinEvent event = new PlayerJoinEvent(playerMock, Component.empty());
         PlayerListener sut = new PlayerListener(economy);
 
         // Act
@@ -97,12 +99,12 @@ public class PlayerListenerTest {
         AccountDto actualAccount = TestUtils.getAccount(playerId);
         AccountDto expectedAccount = new AccountDto(
             playerId.toString(),
-            actualAccount.getCreated()
+            actualAccount.created()
         );
 
         BalanceDto actualBalance = TestUtils.getBalanceForAccountId(playerId, 1);
         BalanceDto expectedBalance = new BalanceDto(
-            actualBalance.getId(),
+            actualBalance.id(),
             playerId.toString(),
             1,
             BigDecimal.valueOf(100.50).setScale(2, RoundingMode.DOWN)

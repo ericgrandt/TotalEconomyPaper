@@ -160,6 +160,6 @@ public class BalanceDataTest {
         // Assert
         assertEquals(expected, actual);
         assertNotNull(actualBalanceDto);
-        assertEquals(BigDecimal.valueOf(100).setScale(2, RoundingMode.DOWN), actualBalanceDto.getBalance());
+        assertEquals(BigDecimal.valueOf(100).setScale(2, RoundingMode.DOWN), actualBalanceDto.balance());
     }
 }

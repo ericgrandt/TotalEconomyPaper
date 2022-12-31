@@ -214,9 +214,9 @@ public class EconomyImplTest {
         // Arrange
         UUID playerUUID = UUID.randomUUID();
         OfflinePlayer playerMock = mock(OfflinePlayer.class);
+        AccountDto accountDto = new AccountDto("", null);
         when(playerMock.getUniqueId()).thenReturn(playerUUID);
-
-        when(accountDataMock.getAccount(playerUUID)).thenReturn(mock(AccountDto.class));
+        when(accountDataMock.getAccount(playerUUID)).thenReturn(accountDto);
 
         EconomyImpl sut = new EconomyImpl(loggerMock, true, null, accountDataMock, balanceDataMock);
 

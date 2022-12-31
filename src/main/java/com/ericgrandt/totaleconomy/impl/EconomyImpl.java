@@ -53,25 +53,25 @@ public class EconomyImpl implements Economy {
 
     @Override
     public int fractionalDigits() {
-        return defaultCurrency.getNumFractionDigits();
+        return defaultCurrency.numFractionDigits();
     }
 
     @Override
     public String format(double amount) {
         BigDecimal bigDecimalAmount = BigDecimal.valueOf(amount)
-            .setScale(defaultCurrency.getNumFractionDigits(), RoundingMode.DOWN);
+            .setScale(defaultCurrency.numFractionDigits(), RoundingMode.DOWN);
 
-        return String.format("%s%s", defaultCurrency.getSymbol(), bigDecimalAmount);
+        return String.format("%s%s", defaultCurrency.symbol(), bigDecimalAmount);
     }
 
     @Override
     public String currencyNamePlural() {
-        return defaultCurrency.getNamePlural();
+        return defaultCurrency.namePlural();
     }
 
     @Override
     public String currencyNameSingular() {
-        return defaultCurrency.getNameSingular();
+        return defaultCurrency.nameSingular();
     }
 
     @Override

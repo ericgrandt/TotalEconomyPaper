@@ -247,7 +247,7 @@ public class JobListenerTest {
         TestUtils.seedJobRewards();
         TestUtils.seedJobExperience();
 
-        CurrencyDto currencyMock = mock(CurrencyDto.class);
+        CurrencyDto currencyDto = new CurrencyDto(0, "", "", "", 0, true);
         Database databaseMock = mock(Database.class);
         Block blockMock = mock(Block.class);
         Player playerMock = mock(Player.class);
@@ -263,7 +263,7 @@ public class JobListenerTest {
         EconomyImpl economy = new EconomyImpl(
             loggerMock,
             true,
-            currencyMock,
+            currencyDto,
             accountData,
             balanceData
         );
@@ -283,7 +283,7 @@ public class JobListenerTest {
             BigDecimal.valueOf(50.50).setScale(2, RoundingMode.DOWN)
         );
         assertNotNull(actualBalance);
-        assertEquals(expectedBalance.getBalance(), actualBalance.getBalance());
+        assertEquals(expectedBalance.balance(), actualBalance.balance());
 
         JobExperienceDto actualExperience = TestUtils.getExperienceForJob(
             playerId,
