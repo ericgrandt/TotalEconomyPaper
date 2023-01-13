@@ -20,7 +20,6 @@ import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Logger;
-
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
