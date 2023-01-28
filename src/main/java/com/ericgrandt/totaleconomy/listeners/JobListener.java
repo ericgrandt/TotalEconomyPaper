@@ -5,6 +5,9 @@ import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import com.ericgrandt.totaleconomy.services.JobService;
 import java.util.UUID;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -37,13 +40,23 @@ public class JobListener implements Listener {
         economy.depositPlayer(player, jobRewardDto.money().doubleValue());
 
         if (addExperienceResult.leveledUp()) {
-            player.sendMessage(
-                String.format(
-                    "%s is now level %s",
-                    addExperienceResult.jobName(),
-                    addExperienceResult.level()
+            Component message = Component.text(
+                addExperienceResult.jobName(),
+                TextColor.fromHexString("#DADFE1"),
+                TextDecoration.BOLD
+            ).append(
+                Component.text(
+                    " is now level",
+                    TextColor.fromHexString("#708090")
+                ).decoration(TextDecoration.BOLD, false)
+            ).append(
+                Component.text(
+                    String.format(" %s", addExperienceResult.level()),
+                    TextColor.fromHexString("#DADFE1"),
+                    TextDecoration.BOLD
                 )
             );
+            player.sendMessage(message);
         }
     }
 

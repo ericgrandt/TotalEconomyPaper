@@ -28,6 +28,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -209,9 +212,25 @@ public class JobListenerTest {
 
         // Act
         sut.onBreakAction(blockBreakEvent);
+        Component expected = Component.text(
+            "Test Job 1",
+            TextColor.fromHexString("#DADFE1"),
+            TextDecoration.BOLD
+        ).append(
+            Component.text(
+                " is now level",
+                TextColor.fromHexString("#708090")
+            ).decoration(TextDecoration.BOLD, false)
+        ).append(
+            Component.text(
+                " 3",
+                TextColor.fromHexString("#DADFE1"),
+                TextDecoration.BOLD
+            )
+        );
 
         // Assert
-        verify(playerMock, times(1)).sendMessage("Test Job 1 is now level 3");
+        verify(playerMock, times(1)).sendMessage(expected);
     }
 
     @Test
