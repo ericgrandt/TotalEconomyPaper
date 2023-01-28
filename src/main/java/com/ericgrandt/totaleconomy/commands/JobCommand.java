@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -32,19 +33,51 @@ public class JobCommand implements CommandExecutor {
         }
 
         try {
-            TextComponent.@NotNull Builder message = Component.empty().content("\n").toBuilder();
+            TextComponent.@NotNull Builder message = Component.newline()
+                .append(
+                    Component.text(
+                        "Jobs",
+                        TextColor.fromHexString("#708090"),
+                        TextDecoration.BOLD,
+                        TextDecoration.UNDERLINED)
+                ).append(Component.newline())
+                .append(Component.newline())
+                .toBuilder();
+
             List<JobExperience> jobExperienceList = jobService.getExperienceForAllJobs(player.getUniqueId());
             for (JobExperience jobExperience : jobExperienceList) {
-                message.append(Component.text(jobExperience.jobName(), NamedTextColor.GRAY, TextDecoration.BOLD))
-                    .append(Component.text(String.format(" [LVL %s]", jobExperience.level()), NamedTextColor.GRAY))
-                    .append(Component.text(
-                        String.format(
-                            " [%s/%s EXP]",
-                            jobExperience.experience(),
-                            jobExperience.experienceToNext()
-                        ),
-                        NamedTextColor.GRAY
-                    )).append(Component.newline());
+                message.append(Component.text(jobExperience.jobName(), TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+                    .append(
+                        Component.text(
+                            " [LVL",
+                            TextColor.fromHexString("#708090"),
+                            TextDecoration.BOLD
+                        )
+                    ).append(
+                        Component.text(
+                            String.format(" %s", jobExperience.level()),
+                            TextColor.fromHexString("#DADFE1"),
+                            TextDecoration.BOLD
+                        )
+                    ).append(
+                        Component.text(
+                            "] [",
+                            TextColor.fromHexString("#708090"),
+                            TextDecoration.BOLD
+                        )
+                    ).append(
+                        Component.text(
+                            String.format("%s/%s", jobExperience.experience(), jobExperience.experienceToNext()),
+                            TextColor.fromHexString("#DADFE1"),
+                            TextDecoration.BOLD
+                        )
+                    ).append(
+                        Component.text(
+                            " EXP]",
+                            TextColor.fromHexString("#708090"),
+                            TextDecoration.BOLD
+                        )
+                    ).append(Component.newline());
             }
 
             player.sendMessage(message.build());

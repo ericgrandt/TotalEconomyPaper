@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -98,15 +99,23 @@ public class JobCommandTest {
             "",
             null
         );
-        Component expected = Component.empty()
-            .content("\n")
-            .append(Component.text("job1", NamedTextColor.GRAY, TextDecoration.BOLD))
-            .append(Component.text(" [LVL 1]", NamedTextColor.GRAY))
-            .append(Component.text(" [0/10 EXP]", NamedTextColor.GRAY))
+        Component expected = Component.newline()
+            .append(Component.text("Jobs", TextColor.fromHexString("#708090"), TextDecoration.BOLD, TextDecoration.UNDERLINED))
             .append(Component.newline())
-            .append(Component.text("job2", NamedTextColor.GRAY, TextDecoration.BOLD))
-            .append(Component.text(" [LVL 3]", NamedTextColor.GRAY))
-            .append(Component.text(" [35/50 EXP]", NamedTextColor.GRAY))
+            .append(Component.newline())
+            .append(Component.text("job1", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text(" [LVL", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
+            .append(Component.text(" 1", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text("] [", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
+            .append(Component.text("0/10", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text(" EXP]", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
+            .append(Component.newline())
+            .append(Component.text("job2", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text(" [LVL", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
+            .append(Component.text(" 3", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text("] [", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
+            .append(Component.text("35/50", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text(" EXP]", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
             .append(Component.newline());
 
         // Assert
@@ -217,19 +226,27 @@ public class JobCommandTest {
 
         // Act
         boolean actual = sut.onCommand(senderMock, mock(Command.class), "", null);
-        Component expectedMessage = Component.empty()
-            .content("\n")
-            .append(Component.text("Test Job 1", NamedTextColor.GRAY, TextDecoration.BOLD))
-            .append(Component.text(" [LVL 2]", NamedTextColor.GRAY))
-            .append(Component.text(" [50/197 EXP]", NamedTextColor.GRAY))
+        Component expected = Component.newline()
+            .append(Component.text("Jobs", TextColor.fromHexString("#708090"), TextDecoration.BOLD, TextDecoration.UNDERLINED))
             .append(Component.newline())
-            .append(Component.text("Test Job 2", NamedTextColor.GRAY, TextDecoration.BOLD))
-            .append(Component.text(" [LVL 1]", NamedTextColor.GRAY))
-            .append(Component.text(" [10/50 EXP]", NamedTextColor.GRAY))
+            .append(Component.newline())
+            .append(Component.text("Test Job 1", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text(" [LVL", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
+            .append(Component.text(" 2", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text("] [", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
+            .append(Component.text("50/197", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text(" EXP]", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
+            .append(Component.newline())
+            .append(Component.text("Test Job 2", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text(" [LVL", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
+            .append(Component.text(" 1", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text("] [", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
+            .append(Component.text("10/50", TextColor.fromHexString("#DADFE1"), TextDecoration.BOLD))
+            .append(Component.text(" EXP]", TextColor.fromHexString("#708090"), TextDecoration.BOLD))
             .append(Component.newline());
 
         // Assert
-        verify(senderMock).sendMessage(expectedMessage);
+        verify(senderMock).sendMessage(expected);
         assertTrue(actual);
     }
 }
