@@ -1,7 +1,6 @@
 package com.ericgrandt.totaleconomy.listeners;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
@@ -27,17 +26,18 @@ import com.ericgrandt.totaleconomy.services.JobService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -144,6 +144,69 @@ public class JobListenerTest {
 
     @Test
     @Tag("Unit")
+    public void onKillAction_WithJobRewardFound_ShouldAddRewards() {
+        // Arrange
+        JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
+        AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
+
+        LivingEntity livingEntityMock = mock(LivingEntity.class);
+        when(livingEntityMock.getName()).thenReturn("");
+        when(livingEntityMock.getKiller()).thenReturn(mock(Player.class));
+        when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
+        when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
+
+        EntityDeathEvent entityDeathEvent = new EntityDeathEvent(livingEntityMock, new ArrayList<>());
+        JobListener sut = new JobListener(economyMock, jobServiceMock);
+
+        // Act
+        sut.onKillAction(entityDeathEvent);
+
+        // Assert
+        verify(economyMock, times(1)).depositPlayer(any(Player.class), anyDouble());
+    }
+
+    @Test
+    @Tag("Unit")
+    public void onKillAction_WithNoJobRewardFound_ShouldNotAddRewards() {
+        // Arrange
+        LivingEntity livingEntityMock = mock(LivingEntity.class);
+        when(livingEntityMock.getName()).thenReturn("");
+        when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(null);
+
+        EntityDeathEvent entityDeathEvent = new EntityDeathEvent(livingEntityMock, new ArrayList<>());
+        JobListener sut = new JobListener(economyMock, jobServiceMock);
+
+        // Act
+        sut.onKillAction(entityDeathEvent);
+
+        // Assert
+        verify(economyMock, times(0)).depositPlayer(any(Player.class), anyDouble());
+    }
+
+    @Test
+    @Tag("Unit")
+    public void onKillAction_WithNoPlayerKiller_ShouldNotAddRewards() {
+        // Arrange
+        JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
+        AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
+
+        LivingEntity livingEntityMock = mock(LivingEntity.class);
+        when(livingEntityMock.getName()).thenReturn("");
+        when(livingEntityMock.getKiller()).thenReturn(null);
+        when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
+
+        EntityDeathEvent entityDeathEvent = new EntityDeathEvent(livingEntityMock, new ArrayList<>());
+        JobListener sut = new JobListener(economyMock, jobServiceMock);
+
+        // Act
+        sut.onKillAction(entityDeathEvent);
+
+        // Assert
+        verify(economyMock, times(0)).depositPlayer(any(Player.class), anyDouble());
+    }
+
+    @Test
+    @Tag("Unit")
     public void createJobExperienceOnPlayerJoin_ShouldCallTheJobService() {
         // Arrange
         UUID playerId = UUID.randomUUID();
@@ -152,7 +215,7 @@ public class JobListenerTest {
         JobService jobServiceMock = mock(JobService.class);
         when(playerMock.getUniqueId()).thenReturn(playerId);
 
-        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(playerMock, "");
+        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(playerMock, Component.empty());
         JobListener sut = new JobListener(mock(EconomyImpl.class), jobServiceMock);
 
         // Act
@@ -243,7 +306,7 @@ public class JobListenerTest {
 
         JobData jobData = new JobData(databaseMock);
         JobService jobService = new JobService(loggerMock, jobData);
-        PlayerJoinEvent event = new PlayerJoinEvent(playerMock, "");
+        PlayerJoinEvent event = new PlayerJoinEvent(playerMock, Component.empty());
         JobListener sut = new JobListener(mock(EconomyImpl.class), jobService);
 
         // Act
