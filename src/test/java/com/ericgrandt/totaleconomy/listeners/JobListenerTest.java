@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -150,7 +151,7 @@ public class JobListenerTest {
         AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
 
         LivingEntity livingEntityMock = mock(LivingEntity.class);
-        when(livingEntityMock.getName()).thenReturn("");
+        when(livingEntityMock.getType()).thenReturn(EntityType.CHICKEN);
         when(livingEntityMock.getKiller()).thenReturn(mock(Player.class));
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
         when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
@@ -170,7 +171,7 @@ public class JobListenerTest {
     public void onKillAction_WithNoJobRewardFound_ShouldNotAddRewards() {
         // Arrange
         LivingEntity livingEntityMock = mock(LivingEntity.class);
-        when(livingEntityMock.getName()).thenReturn("");
+        when(livingEntityMock.getType()).thenReturn(EntityType.CHICKEN);
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(null);
 
         EntityDeathEvent entityDeathEvent = new EntityDeathEvent(livingEntityMock, new ArrayList<>());
@@ -188,10 +189,9 @@ public class JobListenerTest {
     public void onKillAction_WithNoPlayerKiller_ShouldNotAddRewards() {
         // Arrange
         JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
-        AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
 
         LivingEntity livingEntityMock = mock(LivingEntity.class);
-        when(livingEntityMock.getName()).thenReturn("");
+        when(livingEntityMock.getType()).thenReturn(EntityType.CHICKEN);
         when(livingEntityMock.getKiller()).thenReturn(null);
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
 
@@ -238,7 +238,7 @@ public class JobListenerTest {
         TestUtils.seedJobRewards();
         TestUtils.seedJobExperience();
 
-        CurrencyDto currencyDto = new CurrencyDto(0, "", "", "", 0, true);
+        CurrencyDto currencyDto = new CurrencyDto(1, "", "", "", 0, true);
         Database databaseMock = mock(Database.class);
         Block blockMock = mock(Block.class);
         Player playerMock = mock(Player.class);
@@ -273,8 +273,6 @@ public class JobListenerTest {
             1,
             BigDecimal.valueOf(50.50).setScale(2, RoundingMode.DOWN)
         );
-        assertEquals(expectedBalance, actualBalance);
-
         JobExperienceDto actualExperience = TestUtils.getExperienceForJob(
             playerId,
             UUID.fromString("a56a5842-1351-4b73-a021-bcd531260cd1")
@@ -285,6 +283,72 @@ public class JobListenerTest {
             "a56a5842-1351-4b73-a021-bcd531260cd1",
             51
         );
+
+        assertEquals(expectedBalance, actualBalance);
+        assertEquals(expectedExperience, actualExperience);
+    }
+
+    @Test
+    @Tag("Integration")
+    public void onKillAction_WithJobReward_ShouldRewardExperienceAndMoney() throws SQLException {
+        // Arrange
+        TestUtils.resetDb();
+        TestUtils.seedCurrencies();
+        TestUtils.seedDefaultBalances();
+        TestUtils.seedAccounts();
+        TestUtils.seedJobs();
+        TestUtils.seedJobActions();
+        TestUtils.seedJobRewards();
+        TestUtils.seedJobExperience();
+
+        CurrencyDto currencyDto = new CurrencyDto(1, "", "", "", 0, true);
+        Database databaseMock = mock(Database.class);
+        LivingEntity livingEntityMock = mock(LivingEntity.class);
+        Player playerMock = mock(Player.class);
+        UUID playerId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
+        when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
+        when(livingEntityMock.getType()).thenReturn(EntityType.CHICKEN);
+        when(livingEntityMock.getKiller()).thenReturn(playerMock);
+        when(playerMock.getUniqueId()).thenReturn(playerId);
+
+        AccountData accountData = new AccountData(databaseMock);
+        BalanceData balanceData = new BalanceData(databaseMock);
+        JobData jobData = new JobData(databaseMock);
+        JobService jobService = new JobService(loggerMock, jobData);
+        EconomyImpl economy = new EconomyImpl(
+            loggerMock,
+            true,
+            currencyDto,
+            accountData,
+            balanceData
+        );
+
+        EntityDeathEvent entityDeathEvent = new EntityDeathEvent(livingEntityMock, List.of());
+        JobListener sut = new JobListener(economy, jobService);
+
+        // Act
+        sut.onKillAction(entityDeathEvent);
+
+        // Assert
+        BalanceDto actualBalance = TestUtils.getBalanceForAccountId(playerId, 1);
+        BalanceDto expectedBalance = new BalanceDto(
+            "ab661384-11f5-41e1-a5e6-6fa93305d4d1",
+            "62694fb0-07cc-4396-8d63-4f70646d75f0",
+            1,
+            BigDecimal.valueOf(51.00).setScale(2, RoundingMode.DOWN)
+        );
+        JobExperienceDto actualExperience = TestUtils.getExperienceForJob(
+            playerId,
+            UUID.fromString("a56a5842-1351-4b73-a021-bcd531260cd1")
+        );
+        JobExperienceDto expectedExperience = new JobExperienceDto(
+            "748af95b-32a0-45c2-bfdc-9e87c023acdf",
+            "62694fb0-07cc-4396-8d63-4f70646d75f0",
+            "a56a5842-1351-4b73-a021-bcd531260cd1",
+            55
+        );
+
+        assertEquals(expectedBalance, actualBalance);
         assertEquals(expectedExperience, actualExperience);
     }
 

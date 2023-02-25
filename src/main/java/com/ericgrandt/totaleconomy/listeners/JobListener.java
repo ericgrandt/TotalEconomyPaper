@@ -40,7 +40,7 @@ public class JobListener implements Listener {
     @EventHandler
     public void onKillAction(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
-        JobRewardDto jobRewardDto = jobService.getJobReward("kill", entity.getName());
+        JobRewardDto jobRewardDto = jobService.getJobReward("kill", entity.getType().name().toLowerCase());
         if (jobRewardDto == null) {
             return;
         }
