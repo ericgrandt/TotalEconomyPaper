@@ -23,7 +23,7 @@ public class JobData {
         String getDefaultBalanceQuery = "SELECT * FROM te_job WHERE id = ?";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
         ) {
             stmt.setString(1, jobId.toString());
@@ -45,7 +45,7 @@ public class JobData {
         String getDefaultBalanceQuery = "SELECT * FROM te_job_experience WHERE account_id = ? AND job_id = ?";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
         ) {
             stmt.setString(1, accountId.toString());
@@ -70,7 +70,7 @@ public class JobData {
         String getDefaultBalanceQuery = "SELECT * FROM te_job_experience WHERE account_id = ?";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
         ) {
             stmt.setString(1, accountId.toString());
@@ -98,7 +98,7 @@ public class JobData {
             + "WHERE job_action_id = ? AND material = ?";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
         ) {
             stmt.setString(1, jobActionId);
@@ -126,7 +126,7 @@ public class JobData {
         String getDefaultBalanceQuery = "SELECT * FROM te_job_action WHERE action_name = ?";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
         ) {
             stmt.setString(1, jobActionName);
@@ -148,7 +148,7 @@ public class JobData {
         String createBalanceQuery = "INSERT IGNORE INTO te_job_experience(account_id, job_id) "
             + "SELECT ?, j.id FROM te_job j";
 
-        try (Connection conn = database.getConnection()) {
+        try (Connection conn = database.getDataSource().getConnection()) {
             try (PreparedStatement accountStmt = conn.prepareStatement(createBalanceQuery)) {
                 accountStmt.setString(1, accountId.toString());
                 accountStmt.executeUpdate();
@@ -160,7 +160,7 @@ public class JobData {
         String updateExperienceForJobQuery = "UPDATE te_job_experience SET experience = ? WHERE account_id = ? AND job_id = ?";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(updateExperienceForJobQuery)
         ) {
             stmt.setInt(1, experience);

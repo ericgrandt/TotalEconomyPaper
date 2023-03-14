@@ -15,6 +15,7 @@ import com.ericgrandt.totaleconomy.data.Database;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
+import com.zaxxer.hikari.HikariDataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
@@ -254,7 +255,8 @@ public class PayCommandTest {
         when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(targetMock);
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).then(x -> TestUtils.getConnection());
 
         CurrencyDto defaultCurrency = new CurrencyDto(
             1,

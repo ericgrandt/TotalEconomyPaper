@@ -14,7 +14,6 @@ import com.ericgrandt.totaleconomy.listeners.JobListener;
 import com.ericgrandt.totaleconomy.listeners.PlayerListener;
 import com.ericgrandt.totaleconomy.services.JobService;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -39,18 +38,6 @@ public class TotalEconomy extends JavaPlugin implements Listener {
             config.getString("database.user"),
             config.getString("database.password")
         );
-
-        try {
-            database.initDatabase();
-        } catch (SQLException | IOException e) {
-            logger.log(
-                Level.SEVERE,
-                "[Total Economy] Error calling initDatabase",
-                e
-            );
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
 
         CurrencyData currencyData = new CurrencyData(database);
         CurrencyDto defaultCurrency;

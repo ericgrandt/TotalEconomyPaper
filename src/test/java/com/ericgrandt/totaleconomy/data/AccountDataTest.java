@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import com.ericgrandt.totaleconomy.TestUtils;
 import com.ericgrandt.totaleconomy.data.dto.AccountDto;
 import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
+import com.zaxxer.hikari.HikariDataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
@@ -39,7 +40,8 @@ public class AccountDataTest {
         Database databaseMock = mock(Database.class);
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeUpdate()).thenReturn(1).thenReturn(1);
 
@@ -58,7 +60,8 @@ public class AccountDataTest {
         // Arrange
         Database databaseMock = mock(Database.class);
         Connection connectionMock = mock(Connection.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenThrow(SQLException.class);
 
         AccountData sut = new AccountData(databaseMock);
@@ -82,7 +85,8 @@ public class AccountDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(true);
@@ -112,7 +116,8 @@ public class AccountDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(false);
@@ -137,7 +142,8 @@ public class AccountDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(true).thenReturn(true).thenReturn(false);
@@ -166,7 +172,8 @@ public class AccountDataTest {
         Database databaseMock = mock(Database.class);
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeUpdate()).thenReturn(1);
 
@@ -186,7 +193,8 @@ public class AccountDataTest {
         Database databaseMock = mock(Database.class);
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeUpdate()).thenReturn(0);
 
@@ -210,7 +218,8 @@ public class AccountDataTest {
         UUID uuid = UUID.randomUUID();
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         AccountData sut = new AccountData(databaseMock);
 
@@ -252,7 +261,8 @@ public class AccountDataTest {
         UUID uuid = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         AccountData sut = new AccountData(databaseMock);
 
@@ -276,7 +286,8 @@ public class AccountDataTest {
         TestUtils.seedAccounts();
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         AccountData sut = new AccountData(databaseMock);
 
@@ -302,7 +313,8 @@ public class AccountDataTest {
         UUID uuid = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         AccountData sut = new AccountData(databaseMock);
 
