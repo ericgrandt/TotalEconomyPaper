@@ -18,7 +18,7 @@ public class BalanceData {
         String getDefaultBalanceQuery = "SELECT balance FROM te_balance WHERE account_id = ? AND currency_id = ?";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(getDefaultBalanceQuery)
         ) {
             stmt.setString(1, accountId.toString());
@@ -38,7 +38,7 @@ public class BalanceData {
         String updateBalanceQuery = "UPDATE te_balance SET balance = ? WHERE account_id = ? AND currency_id = ?";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(updateBalanceQuery)
         ) {
             stmt.setBigDecimal(1, BigDecimal.valueOf(balance));

@@ -17,7 +17,7 @@ public class CurrencyData {
         String query = "SELECT * FROM te_currency WHERE is_default IS TRUE LIMIT 1";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(query)
         ) {
             try (ResultSet rs = stmt.executeQuery()) {

@@ -23,7 +23,7 @@ public class AccountData {
             + "FROM te_default_balance tdf "
             + "WHERE tdf.currency_id = ?";
 
-        try (Connection conn = database.getConnection()) {
+        try (Connection conn = database.getDataSource().getConnection()) {
             conn.setAutoCommit(false);
 
             try (
@@ -54,7 +54,7 @@ public class AccountData {
         String getAccountQuery = "SELECT * FROM te_account WHERE id = ?";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(getAccountQuery)
         ) {
             stmt.setString(1, accountId.toString());
@@ -76,7 +76,7 @@ public class AccountData {
         String getAccountQuery = "SELECT * FROM te_account";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(getAccountQuery)
         ) {
             List<AccountDto> accounts = new ArrayList<>();
@@ -99,7 +99,7 @@ public class AccountData {
         String deleteAccountQuery = "DELETE FROM te_account WHERE id = ?";
 
         try (
-            Connection conn = database.getConnection();
+            Connection conn = database.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(deleteAccountQuery)
         ) {
             stmt.setString(1, accountId.toString());

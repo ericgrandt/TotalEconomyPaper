@@ -40,18 +40,6 @@ public class TotalEconomy extends JavaPlugin implements Listener {
             config.getString("database.password")
         );
 
-        try {
-            database.initDatabase();
-        } catch (SQLException | IOException e) {
-            logger.log(
-                Level.SEVERE,
-                "[Total Economy] Error calling initDatabase",
-                e
-            );
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-
         CurrencyData currencyData = new CurrencyData(database);
         CurrencyDto defaultCurrency;
 
