@@ -12,6 +12,7 @@ import com.ericgrandt.totaleconomy.data.dto.JobActionDto;
 import com.ericgrandt.totaleconomy.data.dto.JobDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
+import com.zaxxer.hikari.HikariDataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
@@ -36,7 +37,8 @@ public class JobDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(true);
@@ -61,7 +63,8 @@ public class JobDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(false);
@@ -83,7 +86,8 @@ public class JobDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(true);
@@ -110,7 +114,8 @@ public class JobDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(false);
@@ -132,7 +137,8 @@ public class JobDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(true).thenReturn(false);
@@ -161,7 +167,8 @@ public class JobDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(false);
@@ -184,7 +191,8 @@ public class JobDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(true);
@@ -222,7 +230,8 @@ public class JobDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(false);
@@ -244,7 +253,8 @@ public class JobDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(true);
@@ -272,7 +282,8 @@ public class JobDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(false);
@@ -293,7 +304,8 @@ public class JobDataTest {
         Database databaseMock = mock(Database.class);
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeUpdate()).thenReturn(1);
 
@@ -314,7 +326,8 @@ public class JobDataTest {
         Database databaseMock = mock(Database.class);
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeUpdate()).thenReturn(0);
 
@@ -338,7 +351,8 @@ public class JobDataTest {
         UUID jobId = UUID.fromString("a56a5842-1351-4b73-a021-bcd531260cd1");
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         JobData sut = new JobData(databaseMock);
 
@@ -367,7 +381,8 @@ public class JobDataTest {
         UUID jobId = UUID.fromString("a56a5842-1351-4b73-a021-bcd531260cd1");
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         JobData sut = new JobData(databaseMock);
 
@@ -397,7 +412,8 @@ public class JobDataTest {
         UUID accountId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         JobData sut = new JobData(databaseMock);
 
@@ -434,7 +450,8 @@ public class JobDataTest {
         TestUtils.seedJobRewards();
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         JobData sut = new JobData(databaseMock);
 
@@ -464,7 +481,8 @@ public class JobDataTest {
         TestUtils.seedJobActions();
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         JobData sut = new JobData(databaseMock);
 
@@ -491,7 +509,8 @@ public class JobDataTest {
         UUID accountId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         JobData sut = new JobData(databaseMock);
 
@@ -533,7 +552,8 @@ public class JobDataTest {
         UUID jobId = UUID.fromString("a56a5842-1351-4b73-a021-bcd531260cd1");
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         JobData sut = new JobData(databaseMock);
 

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.ericgrandt.totaleconomy.TestUtils;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,7 +28,8 @@ public class CurrencyDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(true);
@@ -63,7 +65,8 @@ public class CurrencyDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(false);
@@ -85,7 +88,8 @@ public class CurrencyDataTest {
         TestUtils.seedCurrencies();
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         CurrencyData sut = new CurrencyData(databaseMock);
 

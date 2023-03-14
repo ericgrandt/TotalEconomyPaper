@@ -21,6 +21,7 @@ import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import com.ericgrandt.totaleconomy.services.JobService;
+import com.zaxxer.hikari.HikariDataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
@@ -271,7 +272,8 @@ public class JobListenerTest {
         Block blockMock = mock(Block.class);
         Player playerMock = mock(Player.class);
         UUID playerId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
-        when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).then(x -> TestUtils.getConnection());
         when(blockMock.getType()).thenReturn(Material.COAL_ORE);
         when(playerMock.getUniqueId()).thenReturn(playerId);
 
@@ -327,7 +329,8 @@ public class JobListenerTest {
         Player playerMock = mock(Player.class);
         UUID playerId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
         when(playerMock.getUniqueId()).thenReturn(playerId);
-        when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).then(x -> TestUtils.getConnection());
 
         JobData jobData = new JobData(databaseMock);
         JobService jobService = new JobService(loggerMock, jobData);

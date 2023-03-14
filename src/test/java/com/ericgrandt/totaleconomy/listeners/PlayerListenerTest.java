@@ -15,6 +15,7 @@ import com.ericgrandt.totaleconomy.data.dto.AccountDto;
 import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.zaxxer.hikari.HikariDataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
@@ -85,7 +86,8 @@ public class PlayerListenerTest {
         Player playerMock = mock(Player.class);
         UUID playerId = UUID.randomUUID();
         when(playerMock.getUniqueId()).thenReturn(playerId);
-        when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).then(x -> TestUtils.getConnection());
 
         AccountData accountData = new AccountData(databaseMock);
         EconomyImpl economy = new EconomyImpl(loggerMock, true, currencyDto, accountData, balanceDataMock);

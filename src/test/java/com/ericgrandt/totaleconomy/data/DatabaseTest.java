@@ -19,7 +19,7 @@ public class DatabaseTest {
 
         // Act/Assert
         try (
-            Connection conn = sut.getConnection();
+            Connection conn = sut.getDataSource().getConnection();
             PreparedStatement stmt = conn.prepareStatement(query);
             ResultSet rs = stmt.executeQuery()
         ) {

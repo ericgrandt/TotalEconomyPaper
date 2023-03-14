@@ -14,7 +14,6 @@ import com.ericgrandt.totaleconomy.listeners.JobListener;
 import com.ericgrandt.totaleconomy.listeners.PlayerListener;
 import com.ericgrandt.totaleconomy.services.JobService;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.logging.Level;

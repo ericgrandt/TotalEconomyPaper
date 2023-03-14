@@ -14,6 +14,7 @@ import com.ericgrandt.totaleconomy.data.BalanceData;
 import com.ericgrandt.totaleconomy.data.Database;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -78,7 +79,8 @@ public class BalanceCommandTest {
 
         Database databaseMock = mock(Database.class);
         CommandSender senderMock = mock(Player.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
         when(((OfflinePlayer) senderMock).getUniqueId()).thenReturn(
             UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0")
         );

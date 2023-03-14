@@ -15,6 +15,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.apache.ibatis.jdbc.ScriptRunner;
 
 public class TestUtils {
     private static final HikariConfig config = new HikariConfig();

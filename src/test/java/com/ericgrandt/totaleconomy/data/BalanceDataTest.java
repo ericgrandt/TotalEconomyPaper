@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.ericgrandt.totaleconomy.TestUtils;
 import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
+import com.zaxxer.hikari.HikariDataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
@@ -31,7 +32,8 @@ public class BalanceDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(true);
@@ -55,7 +57,8 @@ public class BalanceDataTest {
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
         ResultSet resultSetMock = mock(ResultSet.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeQuery()).thenReturn(resultSetMock);
         when(resultSetMock.next()).thenReturn(false);
@@ -76,7 +79,8 @@ public class BalanceDataTest {
         Database databaseMock = mock(Database.class);
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeUpdate()).thenReturn(1);
 
@@ -97,7 +101,8 @@ public class BalanceDataTest {
         Database databaseMock = mock(Database.class);
         Connection connectionMock = mock(Connection.class);
         PreparedStatement preparedStatementMock = mock(PreparedStatement.class);
-        when(databaseMock.getConnection()).thenReturn(connectionMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(connectionMock);
         when(connectionMock.prepareStatement(anyString())).thenReturn(preparedStatementMock);
         when(preparedStatementMock.executeUpdate()).thenReturn(0);
 
@@ -123,7 +128,8 @@ public class BalanceDataTest {
         int currencyId = 1;
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         BalanceData sut = new BalanceData(databaseMock);
 
@@ -147,7 +153,8 @@ public class BalanceDataTest {
         int currencyId = 1;
 
         Database databaseMock = mock(Database.class);
-        when(databaseMock.getConnection()).thenReturn(TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
 
         BalanceData sut = new BalanceData(databaseMock);
 

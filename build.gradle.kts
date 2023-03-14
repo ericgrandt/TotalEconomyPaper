@@ -21,6 +21,8 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
     testImplementation("com.github.MilkBowl:VaultAPI:1.7")
 
+    testImplementation("org.mybatis:mybatis:3.5.11")
+
     implementation("com.zaxxer:HikariCP:5.0.1")
     testImplementation("com.zaxxer:HikariCP:5.0.1")
     testImplementation("com.h2database:h2:2.1.214")

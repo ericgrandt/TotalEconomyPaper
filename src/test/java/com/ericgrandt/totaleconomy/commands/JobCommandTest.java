@@ -14,6 +14,7 @@ import com.ericgrandt.totaleconomy.data.Database;
 import com.ericgrandt.totaleconomy.data.JobData;
 import com.ericgrandt.totaleconomy.models.JobExperience;
 import com.ericgrandt.totaleconomy.services.JobService;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
@@ -217,7 +218,8 @@ public class JobCommandTest {
 
         Database databaseMock = mock(Database.class);
         CommandSender senderMock = mock(Player.class);
-        when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).then(x -> TestUtils.getConnection());
         when(((OfflinePlayer) senderMock).getUniqueId()).thenReturn(playerUuid);
 
         JobData jobData = new JobData(databaseMock);
