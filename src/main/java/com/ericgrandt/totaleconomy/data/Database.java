@@ -21,8 +21,8 @@ public class Database {
         config.setJdbcUrl(this.url);
         config.setUsername(this.user);
         config.setPassword(this.password);
-        config.addDataSourceProperty("minimumIdle", "5");
-        config.addDataSourceProperty("maximumPoolSize", "25");
+        config.addDataSourceProperty("minimumIdle", "3");
+        config.addDataSourceProperty("maximumPoolSize", "10");
         return new HikariDataSource(config);
     }
 
