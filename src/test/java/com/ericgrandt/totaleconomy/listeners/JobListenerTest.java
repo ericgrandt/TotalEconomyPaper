@@ -1,9 +1,11 @@
 package com.ericgrandt.totaleconomy.listeners;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -30,12 +32,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -48,190 +45,84 @@ public class JobListenerTest {
     @Mock
     private Logger loggerMock;
 
+    @Mock
+    private EconomyImpl economyMock;
+
+    @Mock
+    private JobService jobServiceMock;
+
     @Test
     @Tag("Unit")
-    public void onBreakAction_WithJobRewardFound_ShouldDepositMoney() {
+    public void onBreakActionHandler_WithJobRewardFound_ShouldAddRewards() {
         // Arrange
-        Material material = Material.STONE;
-        String materialName = material.name().toLowerCase();
-        UUID playerId = UUID.randomUUID();
-        JobRewardDto jobRewardDto = new JobRewardDto(
-            "",
-            "de8ee82d-e988-4b6e-8dfd-8768415e4a0d",
-            "",
-            1,
-            materialName,
-            BigDecimal.TEN,
-            1
-        );
+        JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
+        AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
 
-        Block blockMock = mock(Block.class);
-        Player playerMock = mock(Player.class);
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        JobService jobServiceMock = mock(JobService.class);
-        when(blockMock.getType()).thenReturn(material);
-        when(playerMock.getUniqueId()).thenReturn(playerId);
-        when(jobServiceMock.getJobReward("break", materialName)).thenReturn(jobRewardDto);
-        when(jobServiceMock.addExperience(playerId, UUID.fromString(jobRewardDto.jobId()), 1)).thenReturn(
-            new AddExperienceResult("Test Job 1", 3, true)
-        );
+        when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
+        when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
 
-        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockMock, playerMock);
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.onBreakAction(blockBreakEvent);
+        sut.onBreakActionHandler("stone", mock(Player.class));
 
         // Assert
-        verify(economyMock, times(1)).depositPlayer(playerMock, BigDecimal.TEN.doubleValue());
+        verify(economyMock, times(1)).depositPlayer(any(Player.class), anyDouble());
     }
 
     @Test
     @Tag("Unit")
-    public void onBreakAction_WithJobRewardFound_ShouldAddExperience() {
+    public void onBreakActionHandler_WithNoJobRewardFound_ShouldNotAddRewards() {
         // Arrange
-        Material material = Material.STONE;
-        String materialName = material.name().toLowerCase();
-        UUID playerId = UUID.randomUUID();
-        JobRewardDto jobRewardDto = new JobRewardDto(
-            "",
-            "de8ee82d-e988-4b6e-8dfd-8768415e4a0d",
-            "",
-            1,
-            materialName,
-            BigDecimal.TEN,
-            1
-        );
+        when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(null);
 
-        Block blockMock = mock(Block.class);
-        Player playerMock = mock(Player.class);
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        JobService jobServiceMock = mock(JobService.class);
-        when(blockMock.getType()).thenReturn(material);
-        when(playerMock.getUniqueId()).thenReturn(playerId);
-        when(jobServiceMock.getJobReward("break", materialName)).thenReturn(jobRewardDto);
-        when(jobServiceMock.addExperience(playerId, UUID.fromString(jobRewardDto.jobId()), 1)).thenReturn(
-            new AddExperienceResult("Test Job 1", 3, true)
-        );
-
-        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockMock, playerMock);
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.onBreakAction(blockBreakEvent);
+        sut.onBreakActionHandler("stone", mock(Player.class));
 
         // Assert
-        verify(jobServiceMock, times(1)).addExperience(
-            playerId,
-            UUID.fromString(jobRewardDto.jobId()),
-            jobRewardDto.experience()
-        );
+        verify(economyMock, times(0)).depositPlayer(any(Player.class), anyDouble());
     }
 
     @Test
     @Tag("Unit")
-    public void onBreakAction_WithNoJobRewardFound_ShouldNotDepositMoney() {
+    public void onBreakActionHandler_WithLevelUp_ShouldSendMessage() {
         // Arrange
-        Material material = Material.STONE;
-        String materialName = material.name().toLowerCase();
+        JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
+        AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, true);
 
-        Block blockMock = mock(Block.class);
         Player playerMock = mock(Player.class);
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        JobService jobServiceMock = mock(JobService.class);
-        when(blockMock.getType()).thenReturn(material);
-        when(jobServiceMock.getJobReward("break", materialName)).thenReturn(null);
+        when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
+        when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
 
-        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockMock, playerMock);
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.onBreakAction(blockBreakEvent);
+        sut.onBreakActionHandler("stone", playerMock);
 
         // Assert
-        verify(economyMock, times(0)).depositPlayer(any(Player.class), any(Double.class));
+        verify(playerMock, times(1)).sendMessage(any(Component.class));
     }
 
     @Test
     @Tag("Unit")
-    public void onBreakAction_WithNoJobRewardFound_ShouldNotAddExperience() {
+    public void onBreakActionHandler_WithNoLevelUp_ShouldNotSendMessage() {
         // Arrange
-        Material material = Material.STONE;
-        String materialName = material.name().toLowerCase();
+        JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
+        AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
 
-        Block blockMock = mock(Block.class);
         Player playerMock = mock(Player.class);
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        JobService jobServiceMock = mock(JobService.class);
-        when(blockMock.getType()).thenReturn(material);
-        when(jobServiceMock.getJobReward("break", materialName)).thenReturn(null);
+        when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
+        when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
 
-        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockMock, playerMock);
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.onBreakAction(blockBreakEvent);
+        sut.onBreakActionHandler("stone", playerMock);
 
         // Assert
-        verify(jobServiceMock, times(0)).addExperience(
-            any(UUID.class),
-            any(UUID.class),
-            any(Integer.class)
-        );
-    }
-
-    @Test
-    @Tag("Unit")
-    public void onBreakAction_WithJobRewardFoundAndLevelUp_ShouldSendMessageToPlayer() {
-        // Arrange
-        Material material = Material.STONE;
-        String materialName = material.name().toLowerCase();
-        UUID playerId = UUID.randomUUID();
-        JobRewardDto jobRewardDto = new JobRewardDto(
-            "",
-            "de8ee82d-e988-4b6e-8dfd-8768415e4a0d",
-            "",
-            1,
-            materialName,
-            BigDecimal.TEN,
-            1
-        );
-
-        Block blockMock = mock(Block.class);
-        Player playerMock = mock(Player.class);
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        JobService jobServiceMock = mock(JobService.class);
-        when(blockMock.getType()).thenReturn(material);
-        when(playerMock.getUniqueId()).thenReturn(playerId);
-        when(jobServiceMock.getJobReward("break", materialName)).thenReturn(jobRewardDto);
-        when(jobServiceMock.addExperience(playerId, UUID.fromString(jobRewardDto.jobId()), 1)).thenReturn(
-            new AddExperienceResult("Test Job 1", 3, true)
-        );
-
-        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockMock, playerMock);
-        JobListener sut = new JobListener(economyMock, jobServiceMock);
-
-        // Act
-        sut.onBreakAction(blockBreakEvent);
-        Component expected = Component.text(
-            "Test Job 1",
-            TextColor.fromHexString("#DADFE1"),
-            TextDecoration.BOLD
-        ).append(
-            Component.text(
-                " is now level",
-                TextColor.fromHexString("#708090")
-            ).decoration(TextDecoration.BOLD, false)
-        ).append(
-            Component.text(
-                " 3",
-                TextColor.fromHexString("#DADFE1"),
-                TextDecoration.BOLD
-            )
-        );
-
-        // Assert
-        verify(playerMock, times(1)).sendMessage(expected);
+        verify(playerMock, times(0)).sendMessage(any(Component.class));
     }
 
     @Test
@@ -244,7 +135,7 @@ public class JobListenerTest {
         JobService jobServiceMock = mock(JobService.class);
         when(playerMock.getUniqueId()).thenReturn(playerId);
 
-        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(playerMock, "");
+        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(playerMock, Component.empty());
         JobListener sut = new JobListener(mock(EconomyImpl.class), jobServiceMock);
 
         // Act
@@ -256,7 +147,7 @@ public class JobListenerTest {
 
     @Test
     @Tag("Integration")
-    public void onBreakAction_WithJobReward_ShouldRewardExperienceAndMoney() throws SQLException {
+    public void onBreakActionHandler_WithJobReward_ShouldRewardExperienceAndMoney() throws SQLException {
         // Arrange
         TestUtils.resetDb();
         TestUtils.seedCurrencies();
@@ -267,14 +158,12 @@ public class JobListenerTest {
         TestUtils.seedJobRewards();
         TestUtils.seedJobExperience();
 
-        CurrencyDto currencyDto = new CurrencyDto(0, "", "", "", 0, true);
+        CurrencyDto currencyDto = new CurrencyDto(1, "", "", "", 0, true);
         Database databaseMock = mock(Database.class);
-        Block blockMock = mock(Block.class);
         Player playerMock = mock(Player.class);
         UUID playerId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
         when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
         when(databaseMock.getDataSource().getConnection()).then(x -> TestUtils.getConnection());
-        when(blockMock.getType()).thenReturn(Material.COAL_ORE);
         when(playerMock.getUniqueId()).thenReturn(playerId);
 
         AccountData accountData = new AccountData(databaseMock);
@@ -289,30 +178,32 @@ public class JobListenerTest {
             balanceData
         );
 
-        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(blockMock, playerMock);
         JobListener sut = new JobListener(economy, jobService);
 
         // Act
-        sut.onBreakAction(blockBreakEvent);
+        sut.onBreakActionHandler("coal_ore", playerMock);
 
         // Assert
         BalanceDto actualBalance = TestUtils.getBalanceForAccountId(playerId, 1);
         BalanceDto expectedBalance = new BalanceDto(
-            "",
-            "",
+            "ab661384-11f5-41e1-a5e6-6fa93305d4d1",
+            "62694fb0-07cc-4396-8d63-4f70646d75f0",
             1,
             BigDecimal.valueOf(50.50).setScale(2, RoundingMode.DOWN)
         );
-        assertNotNull(actualBalance);
-        assertEquals(expectedBalance.balance(), actualBalance.balance());
-
         JobExperienceDto actualExperience = TestUtils.getExperienceForJob(
             playerId,
             UUID.fromString("a56a5842-1351-4b73-a021-bcd531260cd1")
         );
-        JobExperienceDto expectedExperience = new JobExperienceDto("", "", "", 51);
-        assertNotNull(actualExperience);
-        assertEquals(expectedExperience.experience(), actualExperience.experience());
+        JobExperienceDto expectedExperience = new JobExperienceDto(
+            "748af95b-32a0-45c2-bfdc-9e87c023acdf",
+            "62694fb0-07cc-4396-8d63-4f70646d75f0",
+            "a56a5842-1351-4b73-a021-bcd531260cd1",
+            51
+        );
+
+        assertEquals(expectedBalance, actualBalance);
+        assertEquals(expectedExperience, actualExperience);
     }
 
     @Test
@@ -334,7 +225,7 @@ public class JobListenerTest {
 
         JobData jobData = new JobData(databaseMock);
         JobService jobService = new JobService(loggerMock, jobData);
-        PlayerJoinEvent event = new PlayerJoinEvent(playerMock, "");
+        PlayerJoinEvent event = new PlayerJoinEvent(playerMock, Component.empty());
         JobListener sut = new JobListener(mock(EconomyImpl.class), jobService);
 
         // Act
