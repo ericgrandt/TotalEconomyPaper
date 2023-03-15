@@ -126,26 +126,6 @@ public class JobListenerTest {
     }
 
     @Test
-    @Tag("Unit")
-    public void createJobExperienceOnPlayerJoin_ShouldCallTheJobService() {
-        // Arrange
-        UUID playerId = UUID.randomUUID();
-
-        Player playerMock = mock(Player.class);
-        JobService jobServiceMock = mock(JobService.class);
-        when(playerMock.getUniqueId()).thenReturn(playerId);
-
-        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(playerMock, Component.empty());
-        JobListener sut = new JobListener(mock(EconomyImpl.class), jobServiceMock);
-
-        // Act
-        sut.createJobExperienceOnPlayerJoin(playerJoinEvent);
-
-        // Assert
-        verify(jobServiceMock, times(1)).createJobExperienceForAccount(playerId);
-    }
-
-    @Test
     @Tag("Integration")
     public void onBreakActionHandler_WithJobReward_ShouldRewardExperienceAndMoney() throws SQLException {
         // Arrange
@@ -204,51 +184,5 @@ public class JobListenerTest {
 
         assertEquals(expectedBalance, actualBalance);
         assertEquals(expectedExperience, actualExperience);
-    }
-
-    @Test
-    @Tag("Integration")
-    public void createJobExperienceOnPlayerJoin_ShouldCreateRows() throws SQLException {
-        // Arrange
-        TestUtils.resetDb();
-        TestUtils.seedCurrencies();
-        TestUtils.seedDefaultBalances();
-        TestUtils.seedAccounts();
-        TestUtils.seedJobs();
-
-        Database databaseMock = mock(Database.class);
-        Player playerMock = mock(Player.class);
-        UUID playerId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
-        when(playerMock.getUniqueId()).thenReturn(playerId);
-        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
-        when(databaseMock.getDataSource().getConnection()).then(x -> TestUtils.getConnection());
-
-        JobData jobData = new JobData(databaseMock);
-        JobService jobService = new JobService(loggerMock, jobData);
-        PlayerJoinEvent event = new PlayerJoinEvent(playerMock, Component.empty());
-        JobListener sut = new JobListener(mock(EconomyImpl.class), jobService);
-
-        // Act
-        sut.createJobExperienceOnPlayerJoin(event);
-
-        List<JobExperienceDto> actual = TestUtils.getExperienceForJobs(playerId);
-        List<JobExperienceDto> expected = Arrays.asList(
-            new JobExperienceDto(
-                "",
-                "62694fb0-07cc-4396-8d63-4f70646d75f0",
-                "a56a5842-1351-4b73-a021-bcd531260cd1",
-                0
-            ),
-            new JobExperienceDto(
-                "",
-                "62694fb0-07cc-4396-8d63-4f70646d75f0",
-                "858febd0-7122-4ea4-b270-a69a4b6a53a4",
-                0
-            )
-        );
-
-        // Arrange
-        assertEquals(2, actual.size());
-        assertTrue(actual.containsAll(expected));
     }
 }

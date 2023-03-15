@@ -34,7 +34,9 @@ public class JobListener implements Listener {
 
     @EventHandler
     public void createJobExperienceOnPlayerJoin(PlayerJoinEvent event) {
-        jobService.createJobExperienceForAccount(event.getPlayer().getUniqueId());
+        CompletableFuture.runAsync(
+            () -> jobService.createJobExperienceForAccount(event.getPlayer().getUniqueId())
+        );
     }
 
     public void onBreakActionHandler(String blockName, Player player) {
