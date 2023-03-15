@@ -28,6 +28,6 @@ public class BalanceCommand implements CommandExecutor {
 
     public void onCommandHandler(Player player) {
         double balance = economy.getBalance(player);
-        player.sendMessage(economy.format(balance));
+        player.sendMessage("Balance: " + economy.format(balance));
     }
 }

@@ -15,6 +15,8 @@ import com.ericgrandt.totaleconomy.data.Database;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.zaxxer.hikari.HikariDataSource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -70,6 +72,26 @@ public class BalanceCommandTest {
     }
 
     @Test
+    @Tag("Unit")
+    public void onCommandHandler_ShouldSendPlayerTheirBalance() {
+        // Arrange
+        BigDecimal balance = BigDecimal.valueOf(100).setScale(2, RoundingMode.DOWN);
+
+        Player playerMock = mock(Player.class);
+        EconomyImpl economyMock = mock(EconomyImpl.class);
+        when(economyMock.getBalance(playerMock)).thenReturn(balance.doubleValue());
+        when(economyMock.format(any(Double.class))).thenReturn("$" + balance);
+
+        BalanceCommand sut = new BalanceCommand(economyMock);
+
+        // Act
+        sut.onCommandHandler(playerMock);
+
+        // Assert
+        verify(playerMock).sendMessage("Balance: $100.00");
+    }
+
+    @Test
     @Tag("Integration")
     public void onCommandHandler_ShouldSendMessageWithBalanceToPlayer() throws SQLException {
         // Arrange
@@ -103,6 +125,6 @@ public class BalanceCommandTest {
         sut.onCommandHandler(playerMock);
 
         // Assert
-        verify(playerMock).sendMessage("$50.00");
+        verify(playerMock).sendMessage("Balance: $50.00");
     }
 }
