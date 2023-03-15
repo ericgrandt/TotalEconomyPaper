@@ -1,6 +1,7 @@
 package com.ericgrandt.totaleconomy.commands;
 
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import java.util.concurrent.CompletableFuture;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -20,8 +21,13 @@ public class BalanceCommand implements CommandExecutor {
             return false;
         }
 
+        CompletableFuture.runAsync(() -> onCommandHandler(player));
+
+        return true;
+    }
+
+    public void onCommandHandler(Player player) {
         double balance = economy.getBalance(player);
         player.sendMessage(economy.format(balance));
-        return true;
     }
 }

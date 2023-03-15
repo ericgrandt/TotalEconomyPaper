@@ -71,17 +71,17 @@ public class BalanceCommandTest {
 
     @Test
     @Tag("Integration")
-    public void onCommand_ShouldSendMessageWithBalanceToPlayer() throws SQLException {
+    public void onCommandHandler_ShouldSendMessageWithBalanceToPlayer() throws SQLException {
         // Arrange
         TestUtils.resetDb();
         TestUtils.seedCurrencies();
         TestUtils.seedAccounts();
 
         Database databaseMock = mock(Database.class);
-        CommandSender senderMock = mock(Player.class);
+        Player playerMock = mock(Player.class);
         when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
         when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
-        when(((OfflinePlayer) senderMock).getUniqueId()).thenReturn(
+        when((playerMock).getUniqueId()).thenReturn(
             UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0")
         );
 
@@ -100,10 +100,9 @@ public class BalanceCommandTest {
         BalanceCommand sut = new BalanceCommand(economy);
 
         // Act
-        boolean actual = sut.onCommand(senderMock, mock(Command.class), "", null);
+        sut.onCommandHandler(playerMock);
 
         // Assert
-        verify(senderMock).sendMessage("$50.00");
-        assertTrue(actual);
+        verify(playerMock).sendMessage("$50.00");
     }
 }
