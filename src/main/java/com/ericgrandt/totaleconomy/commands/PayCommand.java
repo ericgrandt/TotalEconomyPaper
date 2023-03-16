@@ -2,6 +2,7 @@ package com.ericgrandt.totaleconomy.commands;
 
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
+import java.util.concurrent.CompletableFuture;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,43 +26,47 @@ public class PayCommand implements CommandExecutor {
             return false;
         }
 
-        Player target = bukkitWrapper.getPlayerExact(args[0]);
-        if (target == null) {
+        Player targetPlayer = bukkitWrapper.getPlayerExact(args[0]);
+        CompletableFuture.runAsync(() -> onCommandHandler(player, targetPlayer, args[1]));
+
+        return true;
+    }
+
+    public void onCommandHandler(Player player, Player targetPlayer, String amountArg) {
+        if (targetPlayer == null) {
             player.sendMessage("Invalid player specified");
-            return false;
+            return;
         }
-        if (!isValidDouble(args[1])) {
+        if (!isValidDouble(amountArg)) {
             player.sendMessage("Invalid amount specified");
-            return false;
+            return;
         }
-        if (player.getUniqueId() == target.getUniqueId()) {
+        if (player.getUniqueId() == targetPlayer.getUniqueId()) {
             player.sendMessage("You cannot pay yourself");
-            return false;
+            return;
         }
 
-        double amount = Double.parseDouble(args[1]);
+        double amount = Double.parseDouble(amountArg);
         if (!economy.has(player, amount)) {
             player.sendMessage("You don't have enough to pay this player");
-            return false;
+            return;
         }
 
         EconomyResponse withdrawResponse = economy.withdrawPlayer(player, amount);
         if (withdrawResponse.type == EconomyResponse.ResponseType.FAILURE) {
             player.sendMessage("Error executing command");
-            return false;
+            return;
         }
 
-        EconomyResponse depositResponse =  economy.depositPlayer(target, amount);
+        EconomyResponse depositResponse =  economy.depositPlayer(targetPlayer, amount);
         if (depositResponse.type == EconomyResponse.ResponseType.FAILURE) {
             player.sendMessage("Error executing command");
-            return false;
+            return;
         }
 
         String formattedAmount = economy.format(amount);
-        player.sendMessage(String.format("You sent %s to %s", formattedAmount, target.getName()));
-        target.sendMessage(String.format("You received %s from %s", formattedAmount, player.getName()));
-
-        return true;
+        player.sendMessage(String.format("You sent %s to %s", formattedAmount, targetPlayer.getName()));
+        targetPlayer.sendMessage(String.format("You received %s from %s", formattedAmount, player.getName()));
     }
 
     private boolean isValidDouble(String amount) {

@@ -61,20 +61,18 @@ public class PayCommandTest {
         // Arrange
         BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
-        Player playerMock = mock(Player.class);
-        Player targetMock = mock(Player.class);
-        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(targetMock);
-        when(economyMock.has(playerMock, 100)).thenReturn(true);
-        when(economyMock.withdrawPlayer(playerMock, 100)).thenReturn(mock(EconomyResponse.class));
-        when(economyMock.depositPlayer(targetMock, 100)).thenReturn(mock(EconomyResponse.class));
+        when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(mock(Player.class));
 
         PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
 
         // Act
         String[] args = {"playerName", "100"};
-        boolean actual = sut.onCommand(playerMock, mock(Command.class), "pay", args);
+        boolean actual = sut.onCommand(
+            mock(Player.class),
+            mock(Command.class),
+            "pay",
+            args
+        );
 
         // Assert
         assertTrue(actual);
@@ -82,7 +80,7 @@ public class PayCommandTest {
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithoutEnoughBalance_ShouldReturnFalse() {
+    public void onCommandHandler_WithoutEnoughBalance_ShouldReturnFalse() {
         // Arrange
         BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
@@ -90,66 +88,57 @@ public class PayCommandTest {
         Player targetMock = mock(Player.class);
         when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
         when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(targetMock);
         when(economyMock.has(playerMock, 100)).thenReturn(false);
 
         PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
 
         // Act
-        String[] args = {"playerName", "100"};
-        boolean actual = sut.onCommand(playerMock, mock(Command.class), "pay", args);
+        sut.onCommandHandler(playerMock, targetMock, "100");
 
         // Assert
         verify(playerMock).sendMessage("You don't have enough to pay this player");
-        assertFalse(actual);
     }
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithInvalidPlayerArg_ShouldReturnFalse() {
+    public void onCommandHandler_WithInvalidPlayerArg_ShouldReturnFalse() {
         // Arrange
-        BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
-        EconomyImpl economyMock = mock(EconomyImpl.class);
         Player playerMock = mock(Player.class);
-        when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(null);
 
-        PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
+        PayCommand sut = new PayCommand(
+            mock(BukkitWrapper.class),
+            mock(EconomyImpl.class)
+        );
 
         // Act
-        String[] args = {"playerName", "100"};
-        boolean actual = sut.onCommand(playerMock, mock(Command.class), "pay", args);
+        sut.onCommandHandler(playerMock, null, "100");
 
         // Assert
         verify(playerMock).sendMessage("Invalid player specified");
-        assertFalse(actual);
     }
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithInvalidAmountArg_ShouldReturnFalse() {
+    public void onCommandHandler_WithInvalidAmountArg_ShouldSendMessage() {
         // Arrange
-        BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
-        EconomyImpl economyMock = mock(EconomyImpl.class);
         Player playerMock = mock(Player.class);
-        Player targetMock = mock(Player.class);
-        when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(targetMock);
 
-        PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
+        PayCommand sut = new PayCommand(
+            mock(BukkitWrapper.class),
+            mock(EconomyImpl.class)
+        );
 
         // Act
-        String[] args = {"playerName", "asdf"};
-        boolean actual = sut.onCommand(playerMock, mock(Command.class), "pay", args);
+        sut.onCommandHandler(playerMock, mock(Player.class), "not a double");
 
         // Assert
         verify(playerMock).sendMessage("Invalid amount specified");
-        assertFalse(actual);
     }
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithFailedWithdraw_ShouldReturnFalse() {
+    public void onCommandHandler_WithFailedWithdraw_ShouldSendMessage() {
         // Arrange
-        BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
         Player playerMock = mock(Player.class);
         Player targetMock = mock(Player.class);
@@ -161,26 +150,22 @@ public class PayCommandTest {
         );
         when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
         when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(targetMock);
         when(economyMock.has(playerMock, 100)).thenReturn(true);
         when(economyMock.withdrawPlayer(playerMock, 100)).thenReturn(withdrawResponse);
 
-        PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
+        PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
 
         // Act
-        String[] args = {"playerName", "100"};
-        boolean actual = sut.onCommand(playerMock, mock(Command.class), "pay", args);
+        sut.onCommandHandler(playerMock, targetMock, "100");
 
         // Assert
         verify(playerMock).sendMessage("Error executing command");
-        assertFalse(actual);
     }
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithFailedDeposit_ShouldReturnFalse() {
+    public void onCommandHandler_WithFailedDeposit_ShouldSendMessage() {
         // Arrange
-        BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
         Player playerMock = mock(Player.class);
         Player targetMock = mock(Player.class);
@@ -192,46 +177,41 @@ public class PayCommandTest {
         );
         when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
         when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(targetMock);
         when(economyMock.has(playerMock, 100)).thenReturn(true);
         when(economyMock.withdrawPlayer(playerMock, 100)).thenReturn(mock(EconomyResponse.class));
         when(economyMock.depositPlayer(targetMock, 100)).thenReturn(depositResponse);
 
-        PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
+        PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
 
         // Act
-        String[] args = {"playerName", "100"};
-        boolean actual = sut.onCommand(playerMock, mock(Command.class), "pay", args);
+        sut.onCommandHandler(playerMock, targetMock, "100");
 
         // Assert
         verify(playerMock).sendMessage("Error executing command");
-        assertFalse(actual);
     }
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithSameSenderAndTarget_ShouldReturnFalse() {
+    public void onCommandHandler_WithSameSenderAndTarget_ShouldSendMessage() {
         // Arrange
-        BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
-        EconomyImpl economyMock = mock(EconomyImpl.class);
         Player playerMock = mock(Player.class);
         when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(playerMock);
 
-        PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
+        PayCommand sut = new PayCommand(
+            mock(BukkitWrapper.class),
+            mock(EconomyImpl.class)
+        );
 
         // Act
-        String[] args = {"playerName", "100"};
-        boolean actual = sut.onCommand(playerMock, mock(Command.class), "pay", args);
+        sut.onCommandHandler(playerMock, playerMock, "100");
 
         // Assert
         verify(playerMock).sendMessage("You cannot pay yourself");
-        assertFalse(actual);
     }
 
     @Test
     @Tag("Integration")
-    public void onCommand_ShouldTransferMoney() throws SQLException {
+    public void onCommandHandler_ShouldTransferMoney() throws SQLException {
         // Arrange
         TestUtils.resetDb();
         TestUtils.seedCurrencies();
@@ -251,9 +231,6 @@ public class PayCommandTest {
         when(targetMock.getUniqueId()).thenReturn(targetUUID);
         when(targetMock.getName()).thenReturn(targetName);
 
-        BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
-        when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(targetMock);
-
         Database databaseMock = mock(Database.class);
         when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
         when(databaseMock.getDataSource().getConnection()).then(x -> TestUtils.getConnection());
@@ -268,12 +245,14 @@ public class PayCommandTest {
         );
         AccountData accountData = new AccountData(databaseMock);
         BalanceData balanceData = new BalanceData(databaseMock);
-        EconomyImpl economy = new EconomyImpl(loggerMock, true, defaultCurrency, accountData, balanceData);
-        PayCommand sut = new PayCommand(bukkitWrapperMock, economy);
+
+        PayCommand sut = new PayCommand(
+            mock(BukkitWrapper.class),
+            new EconomyImpl(loggerMock, true, defaultCurrency, accountData, balanceData)
+        );
 
         // Act
-        String[] args = {"playerName", String.valueOf(amount)};
-        sut.onCommand(playerMock, mock(Command.class), "", args);
+        sut.onCommandHandler(playerMock, targetMock, String.valueOf(amount));
 
         BigDecimal actualPlayerBalance = balanceData.getBalance(playerUUID, 1);
         BigDecimal expectedPlayerBalance = BigDecimal.valueOf(25.00).setScale(2, RoundingMode.DOWN);
