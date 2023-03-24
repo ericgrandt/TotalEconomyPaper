@@ -116,6 +116,33 @@ public class PayCommandTest {
 
     @Test
     @Tag("Unit")
+    public void onCommandHandler_WithAmountContainingTooLittleDecimalPlaces_ShouldCallWithdrawWithScaledAmount() {
+        // Arrange
+        EconomyImpl economyMock = mock(EconomyImpl.class);
+        Player playerMock = mock(Player.class);
+        Player targetMock = mock(Player.class);
+        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
+        when(economyMock.has(playerMock, 100.10)).thenReturn(true);
+        when(economyMock.withdrawPlayer(any(Player.class), anyDouble())).thenReturn(new EconomyResponse(0, 0, EconomyResponse.ResponseType.SUCCESS, ""));
+        when(economyMock.depositPlayer(any(Player.class), anyDouble())).thenReturn(new EconomyResponse(0, 0, EconomyResponse.ResponseType.SUCCESS, ""));
+        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
+
+        // Act
+        sut.onCommandHandler(
+            playerMock,
+            targetMock,
+            "100.1"
+        );
+
+        // Assert
+        verify(economyMock).withdrawPlayer(playerMock, 100.10);
+    }
+
+    @Test
+    @Tag("Unit")
     public void onCommandHandler_WithAmountLessThanZero_ShouldReturnFalse() {
         // Arrange
         EconomyImpl economyMock = mock(EconomyImpl.class);
