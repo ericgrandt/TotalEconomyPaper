@@ -345,6 +345,10 @@ public class EconomyImpl implements Economy {
         throw new UnsupportedOperationException();
     }
 
+    public CurrencyDto getDefaultCurrency() {
+        return defaultCurrency;
+    }
+
     private BigDecimal getBigDecimalBalance(UUID playerUUID, int currencyId) {
         try {
             return balanceData.getBalance(playerUUID, currencyId);

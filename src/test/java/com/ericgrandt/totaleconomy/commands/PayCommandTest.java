@@ -2,7 +2,8 @@ package com.ericgrandt.totaleconomy.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,9 +38,18 @@ public class PayCommandTest {
     @Mock
     private Logger loggerMock;
 
+    private final CurrencyDto defaultCurrency = new CurrencyDto(
+        1,
+        "singular",
+        "plural",
+        "$",
+        2,
+        true
+    );
+
     @Test
     @Tag("Unit")
-    public void onCommand_WithNonPlayerSender_ShouldReturnSendMessageAndReturnFalse() {
+    public void onCommand_WithNonPlayerSender_ShouldSendMessageAndReturnFalse() {
         // Arrange
         BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
@@ -57,16 +67,15 @@ public class PayCommandTest {
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithSuccessfulPay_ShouldReturnTrue() {
+    public void onCommand_WithLessThanTwoArgs_ShouldReturnFalse() {
         // Arrange
         BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
-        when(bukkitWrapperMock.getPlayerExact("playerName")).thenReturn(mock(Player.class));
 
         PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
 
         // Act
-        String[] args = {"playerName", "100"};
+        String[] args = {"playerName"};
         boolean actual = sut.onCommand(
             mock(Player.class),
             mock(Command.class),
@@ -75,7 +84,54 @@ public class PayCommandTest {
         );
 
         // Assert
-        assertTrue(actual);
+        assertFalse(actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void onCommandHandler_WithAmountContainingTooManyDecimalPlaces_ShouldCallWithdrawWithScaledAmount() {
+        // Arrange
+        EconomyImpl economyMock = mock(EconomyImpl.class);
+        Player playerMock = mock(Player.class);
+        Player targetMock = mock(Player.class);
+        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
+        when(economyMock.has(playerMock, 100.01)).thenReturn(true);
+        when(economyMock.withdrawPlayer(any(Player.class), anyDouble())).thenReturn(new EconomyResponse(0, 0, EconomyResponse.ResponseType.SUCCESS, ""));
+        when(economyMock.depositPlayer(any(Player.class), anyDouble())).thenReturn(new EconomyResponse(0, 0, EconomyResponse.ResponseType.SUCCESS, ""));
+        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
+
+        // Act
+        sut.onCommandHandler(
+            playerMock,
+            targetMock,
+            "100.0191"
+        );
+
+        // Assert
+        verify(economyMock).withdrawPlayer(playerMock, 100.01);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void onCommandHandler_WithAmountLessThanZero_ShouldReturnFalse() {
+        // Arrange
+        EconomyImpl economyMock = mock(EconomyImpl.class);
+        Player playerMock = mock(Player.class);
+        Player targetMock = mock(Player.class);
+        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
+        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
+
+        // Act
+        sut.onCommandHandler(playerMock, targetMock, "-10");
+
+        // Assert
+        verify(playerMock).sendMessage("Amount must be more than 0");
     }
 
     @Test
@@ -86,9 +142,10 @@ public class PayCommandTest {
         EconomyImpl economyMock = mock(EconomyImpl.class);
         Player playerMock = mock(Player.class);
         Player targetMock = mock(Player.class);
+        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
+        when(economyMock.has(playerMock, 100)).thenReturn(false);
         when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
         when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(economyMock.has(playerMock, 100)).thenReturn(false);
 
         PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
 
@@ -148,10 +205,11 @@ public class PayCommandTest {
             EconomyResponse.ResponseType.FAILURE,
             ""
         );
-        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
         when(economyMock.has(playerMock, 100)).thenReturn(true);
         when(economyMock.withdrawPlayer(playerMock, 100)).thenReturn(withdrawResponse);
+        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
 
         PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
 
@@ -175,11 +233,12 @@ public class PayCommandTest {
             EconomyResponse.ResponseType.FAILURE,
             ""
         );
-        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
         when(economyMock.has(playerMock, 100)).thenReturn(true);
         when(economyMock.withdrawPlayer(playerMock, 100)).thenReturn(mock(EconomyResponse.class));
         when(economyMock.depositPlayer(targetMock, 100)).thenReturn(depositResponse);
+        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
 
         PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
 

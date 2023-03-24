@@ -1,7 +1,10 @@
 package com.ericgrandt.totaleconomy.commands;
 
+import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.concurrent.CompletableFuture;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.command.Command;
@@ -50,8 +53,12 @@ public class PayCommand implements CommandExecutor {
             return;
         }
 
-        // TODO: Handle negatives
-        double amount = Double.parseDouble(amountArg);
+        double amount = scaleAmountToNumFractionDigits(Double.parseDouble(amountArg));
+        if (amount <= 0) {
+            player.sendMessage("Amount must be more than 0");
+            return;
+        }
+
         if (!economy.has(player, amount)) {
             player.sendMessage("You don't have enough to pay this player");
             return;
@@ -81,5 +88,13 @@ public class PayCommand implements CommandExecutor {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    private double scaleAmountToNumFractionDigits(double amount) {
+        CurrencyDto defaultCurrency = economy.getDefaultCurrency();
+        return BigDecimal.valueOf(amount).setScale(
+            defaultCurrency.numFractionDigits(),
+            RoundingMode.DOWN
+        ).doubleValue();
     }
 }

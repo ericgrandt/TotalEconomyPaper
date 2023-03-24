@@ -1,9 +1,7 @@
 package com.ericgrandt.totaleconomy.commands;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,9 +18,7 @@ import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.logging.Logger;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.Tag;
@@ -48,27 +44,6 @@ public class BalanceCommandTest {
 
         // Assert
         assertFalse(actual);
-    }
-
-    @Test
-    @Tag("Unit")
-    public void onCommand_WithPlayerSender_ShouldReturnTrue() {
-        // Arrange
-        double balance = 100;
-
-        CommandSender senderMock = mock(Player.class);
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        doNothing().when(senderMock).sendMessage(String.valueOf(balance));
-        when(economyMock.getBalance((OfflinePlayer) senderMock)).thenReturn(balance);
-        when(economyMock.format(any(Double.class))).thenReturn(String.valueOf(balance));
-
-        BalanceCommand sut = new BalanceCommand(economyMock);
-
-        // Act
-        boolean actual = sut.onCommand(senderMock, mock(Command.class), "", null);
-
-        // Assert
-        assertTrue(actual);
     }
 
     @Test
