@@ -13,7 +13,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 
 public class JobListener implements Listener {
     private final EconomyImpl economy;
@@ -30,15 +29,6 @@ public class JobListener implements Listener {
         String blockName = event.getBlock().getType().name().toLowerCase();
 
         CompletableFuture.runAsync(() -> onBreakActionHandler(blockName, player));
-    }
-
-    @EventHandler
-    public void createJobExperienceOnPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-
-        CompletableFuture.runAsync(
-            () -> jobService.createJobExperienceForAccount(player.getUniqueId())
-        );
     }
 
     public void onBreakActionHandler(String blockName, Player player) {
