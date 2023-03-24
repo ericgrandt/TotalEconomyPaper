@@ -37,17 +37,16 @@ public class PlayerListenerTest {
 
     @Test
     @Tag("Unit")
-    public void onPlayerJoin_WithAccountAlreadyExisting_ShouldNotCallCreateAccount() {
+    public void onPlayerJoinHandler_WithAccountAlreadyExisting_ShouldNotCallCreateAccount() {
         // Arrange
         Player playerMock = mock(Player.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
         when(economyMock.hasAccount(playerMock)).thenReturn(true);
 
-        PlayerJoinEvent event = new PlayerJoinEvent(playerMock, "");
         PlayerListener sut = new PlayerListener(economyMock);
 
         // Act
-        sut.onPlayerJoin(event);
+        sut.onPlayerJoinHandler(playerMock);
 
         // Assert
         verify(economyMock, times(0)).createPlayerAccount(any(Player.class));
@@ -55,17 +54,16 @@ public class PlayerListenerTest {
 
     @Test
     @Tag("Unit")
-    public void onPlayerJoin_WithNoAccountAlreadyExisting_ShouldCallCreateAccount() {
+    public void onPlayerJoinHandler_WithNoAccountAlreadyExisting_ShouldCallCreateAccount() {
         // Arrange
         Player playerMock = mock(Player.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
         when(economyMock.hasAccount(playerMock)).thenReturn(false);
 
-        PlayerJoinEvent event = new PlayerJoinEvent(playerMock, "");
         PlayerListener sut = new PlayerListener(economyMock);
 
         // Act
-        sut.onPlayerJoin(event);
+        sut.onPlayerJoinHandler(playerMock);
 
         // Assert
         verify(economyMock, times(1)).createPlayerAccount(playerMock);
@@ -73,7 +71,7 @@ public class PlayerListenerTest {
 
     @Test
     @Tag("Integration")
-    public void onPlayerJoin_ShouldCreateNewAccountAndBalances() throws SQLException {
+    public void onPlayerJoinHandler_ShouldCreateNewAccountAndBalances() throws SQLException {
         // Arrange
         TestUtils.resetDb();
         TestUtils.seedCurrencies();
@@ -91,11 +89,10 @@ public class PlayerListenerTest {
 
         AccountData accountData = new AccountData(databaseMock);
         EconomyImpl economy = new EconomyImpl(loggerMock, true, currencyDto, accountData, balanceDataMock);
-        PlayerJoinEvent event = new PlayerJoinEvent(playerMock, Component.empty());
         PlayerListener sut = new PlayerListener(economy);
 
         // Act
-        sut.onPlayerJoin(event);
+        sut.onPlayerJoinHandler(playerMock);
 
         AccountDto actualAccount = TestUtils.getAccount(playerId);
         AccountDto expectedAccount = new AccountDto(

@@ -1,6 +1,7 @@
 package com.ericgrandt.totaleconomy.listeners;
 
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,6 +17,11 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+
+        CompletableFuture.runAsync(() -> onPlayerJoinHandler(player));
+    }
+
+    public void onPlayerJoinHandler(Player player) {
         if (economy.hasAccount(player)) {
             return;
         }
