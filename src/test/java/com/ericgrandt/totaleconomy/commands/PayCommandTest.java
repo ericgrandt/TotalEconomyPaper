@@ -219,7 +219,6 @@ public class PayCommandTest {
 
         UUID playerUUID = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
         UUID targetUUID = UUID.fromString("551fe9be-f77f-4bcb-81db-548db6e77aea");
-        double amount = 25;
 
         Player playerMock = mock(Player.class);
         String playerName = "Player 1";
@@ -252,7 +251,7 @@ public class PayCommandTest {
         );
 
         // Act
-        sut.onCommandHandler(playerMock, targetMock, String.valueOf(amount));
+        sut.onCommandHandler(playerMock, targetMock, String.valueOf(25));
 
         BigDecimal actualPlayerBalance = balanceData.getBalance(playerUUID, 1);
         BigDecimal expectedPlayerBalance = BigDecimal.valueOf(25.00).setScale(2, RoundingMode.DOWN);
