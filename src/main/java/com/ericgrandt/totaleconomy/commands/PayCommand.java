@@ -26,6 +26,10 @@ public class PayCommand implements CommandExecutor {
             return false;
         }
 
+        if (args.length != 2) {
+            return false;
+        }
+
         Player targetPlayer = bukkitWrapper.getPlayerExact(args[0]);
         CompletableFuture.runAsync(() -> onCommandHandler(player, targetPlayer, args[1]));
 
@@ -46,6 +50,7 @@ public class PayCommand implements CommandExecutor {
             return;
         }
 
+        // TODO: Handle negatives
         double amount = Double.parseDouble(amountArg);
         if (!economy.has(player, amount)) {
             player.sendMessage("You don't have enough to pay this player");
