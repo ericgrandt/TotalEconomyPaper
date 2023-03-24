@@ -11,14 +11,18 @@ import com.ericgrandt.totaleconomy.TestUtils;
 import com.ericgrandt.totaleconomy.data.AccountData;
 import com.ericgrandt.totaleconomy.data.BalanceData;
 import com.ericgrandt.totaleconomy.data.Database;
+import com.ericgrandt.totaleconomy.data.JobData;
 import com.ericgrandt.totaleconomy.data.dto.AccountDto;
 import com.ericgrandt.totaleconomy.data.dto.BalanceDto;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
+import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.services.JobService;
 import com.zaxxer.hikari.HikariDataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
@@ -39,9 +43,10 @@ public class PlayerListenerTest {
         // Arrange
         Player playerMock = mock(Player.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
+        JobService jobServiceMock = mock(JobService.class);
         when(economyMock.hasAccount(playerMock)).thenReturn(true);
 
-        PlayerListener sut = new PlayerListener(economyMock);
+        PlayerListener sut = new PlayerListener(economyMock, jobServiceMock);
 
         // Act
         sut.onPlayerJoinHandler(playerMock);
@@ -56,9 +61,10 @@ public class PlayerListenerTest {
         // Arrange
         Player playerMock = mock(Player.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
+        JobService jobServiceMock = mock(JobService.class);
         when(economyMock.hasAccount(playerMock)).thenReturn(false);
 
-        PlayerListener sut = new PlayerListener(economyMock);
+        PlayerListener sut = new PlayerListener(economyMock, jobServiceMock);
 
         // Act
         sut.onPlayerJoinHandler(playerMock);
@@ -74,7 +80,7 @@ public class PlayerListenerTest {
         TestUtils.resetDb();
         TestUtils.seedCurrencies();
         TestUtils.seedDefaultBalances();
-        TestUtils.seedAccounts();
+        TestUtils.seedJobs();
 
         CurrencyDto currencyDto = new CurrencyDto(0, "", "", "", 0, true);
         BalanceData balanceDataMock = mock(BalanceData.class);
@@ -86,12 +92,20 @@ public class PlayerListenerTest {
         when(databaseMock.getDataSource().getConnection()).then(x -> TestUtils.getConnection());
 
         AccountData accountData = new AccountData(databaseMock);
+        JobData jobData = new JobData(databaseMock);
         EconomyImpl economy = new EconomyImpl(loggerMock, true, currencyDto, accountData, balanceDataMock);
-        PlayerListener sut = new PlayerListener(economy);
+        JobService jobServiceMock = new JobService(loggerMock, jobData);
+        PlayerListener sut = new PlayerListener(economy, jobServiceMock);
 
         // Act
         sut.onPlayerJoinHandler(playerMock);
 
+        // Assert
+        assertAccountsAreEqualOnPlayerJoinHandler(playerId);
+        assertJobExperienceAreEqualOnPlayerJoinHandler(playerId);
+    }
+
+    private void assertAccountsAreEqualOnPlayerJoinHandler(UUID playerId) throws SQLException {
         AccountDto actualAccount = TestUtils.getAccount(playerId);
         AccountDto expectedAccount = new AccountDto(
             playerId.toString(),
@@ -106,8 +120,13 @@ public class PlayerListenerTest {
             BigDecimal.valueOf(100.50).setScale(2, RoundingMode.DOWN)
         );
 
-        // Assert
         assertEquals(expectedAccount, actualAccount);
         assertEquals(expectedBalance, actualBalance);
+    }
+
+    private void assertJobExperienceAreEqualOnPlayerJoinHandler(UUID accountId) throws SQLException {
+        List<JobExperienceDto> actualJobExperience = TestUtils.getExperienceForJobs(accountId);
+
+        assert actualJobExperience.size() == 2;
     }
 }
