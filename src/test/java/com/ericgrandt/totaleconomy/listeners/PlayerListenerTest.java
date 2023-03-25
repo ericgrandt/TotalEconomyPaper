@@ -102,7 +102,7 @@ public class PlayerListenerTest {
 
         // Assert
         assertAccountsAreEqualOnPlayerJoinHandler(playerId);
-        assertJobExperienceAreEqualOnPlayerJoinHandler(playerId);
+        assertJobExperienceIsAddedOnPlayerJoinHandler(playerId);
     }
 
     private void assertAccountsAreEqualOnPlayerJoinHandler(UUID playerId) throws SQLException {
@@ -124,7 +124,7 @@ public class PlayerListenerTest {
         assertEquals(expectedBalance, actualBalance);
     }
 
-    private void assertJobExperienceAreEqualOnPlayerJoinHandler(UUID accountId) throws SQLException {
+    private void assertJobExperienceIsAddedOnPlayerJoinHandler(UUID accountId) throws SQLException {
         List<JobExperienceDto> actualJobExperience = TestUtils.getExperienceForJobs(accountId);
 
         assert actualJobExperience.size() == 2;
