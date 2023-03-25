@@ -30,7 +30,7 @@ public class JobListener implements Listener {
         Player player = event.getPlayer();
         String blockName = event.getBlock().getType().name().toLowerCase();
 
-        CompletableFuture.runAsync(() -> onBreakActionHandler(blockName, player));
+        CompletableFuture.runAsync(() -> actionHandler(blockName, player, "break"));
     }
 
     @EventHandler
@@ -43,21 +43,11 @@ public class JobListener implements Listener {
 
         String entityName = entity.getType().name().toLowerCase();
 
-        CompletableFuture.runAsync(() -> onKillActionHandler(entityName, player));
+        CompletableFuture.runAsync(() -> actionHandler(entityName, player, "kill"));
     }
 
-    public void onBreakActionHandler(String blockName, Player player) {
-        JobRewardDto jobRewardDto = jobService.getJobReward("break", blockName);
-        if (jobRewardDto == null) {
-            return;
-        }
-
-        addExperience(player, jobRewardDto);
-        economy.depositPlayer(player, jobRewardDto.money().doubleValue());
-    }
-
-    public void onKillActionHandler(String entityName, Player player) {
-        JobRewardDto jobRewardDto = jobService.getJobReward("kill", entityName);
+    public void actionHandler(String materialName, Player player, String action) {
+        JobRewardDto jobRewardDto = jobService.getJobReward(action, materialName);
         if (jobRewardDto == null) {
             return;
         }

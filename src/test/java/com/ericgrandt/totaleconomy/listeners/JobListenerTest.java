@@ -49,7 +49,7 @@ public class JobListenerTest {
 
     @Test
     @Tag("Unit")
-    public void onBreakActionHandler_WithJobRewardFound_ShouldAddRewards() {
+    public void actionHandler_WithJobRewardFound_ShouldAddRewards() {
         // Arrange
         JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
         AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
@@ -60,7 +60,7 @@ public class JobListenerTest {
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.onBreakActionHandler("stone", mock(Player.class));
+        sut.actionHandler("stone", mock(Player.class), "action");
 
         // Assert
         verify(economyMock, times(1)).depositPlayer(any(Player.class), anyDouble());
@@ -68,14 +68,14 @@ public class JobListenerTest {
 
     @Test
     @Tag("Unit")
-    public void onBreakActionHandler_WithNoJobRewardFound_ShouldNotAddRewards() {
+    public void actionHandler_WithNoJobRewardFound_ShouldNotAddRewards() {
         // Arrange
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(null);
 
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.onBreakActionHandler("stone", mock(Player.class));
+        sut.actionHandler("stone", mock(Player.class), "break");
 
         // Assert
         verify(economyMock, times(0)).depositPlayer(any(Player.class), anyDouble());
@@ -83,7 +83,7 @@ public class JobListenerTest {
 
     @Test
     @Tag("Unit")
-    public void onBreakActionHandler_WithLevelUp_ShouldSendMessage() {
+    public void actionHandler_WithLevelUp_ShouldSendMessage() {
         // Arrange
         JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
         AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, true);
@@ -95,7 +95,7 @@ public class JobListenerTest {
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.onBreakActionHandler("stone", playerMock);
+        sut.actionHandler("stone", playerMock, "kill");
 
         // Assert
         verify(playerMock, times(1)).sendMessage(any(Component.class));
@@ -103,7 +103,7 @@ public class JobListenerTest {
 
     @Test
     @Tag("Unit")
-    public void onBreakActionHandler_WithNoLevelUp_ShouldNotSendMessage() {
+    public void actionHandler_WithNoLevelUp_ShouldNotSendMessage() {
         // Arrange
         JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
         AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
@@ -115,49 +115,15 @@ public class JobListenerTest {
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.onBreakActionHandler("stone", playerMock);
+        sut.actionHandler("stone", playerMock, "break");
 
         // Assert
         verify(playerMock, times(0)).sendMessage(any(Component.class));
     }
 
     @Test
-    @Tag("Unit")
-    public void onKillActionHandler_WithJobRewardFound_ShouldAddRewards() {
-        // Arrange
-        JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
-        AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
-
-        when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
-        when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
-
-        JobListener sut = new JobListener(economyMock, jobServiceMock);
-
-        // Act
-        sut.onKillActionHandler("chicken", mock(Player.class));
-
-        // Assert
-        verify(economyMock, times(1)).depositPlayer(any(Player.class), anyDouble());
-    }
-
-    @Test
-    @Tag("Unit")
-    public void onKillActionHandler_WithNoJobRewardFound_ShouldNotAddRewards() {
-        // Arrange
-        when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(null);
-
-        JobListener sut = new JobListener(economyMock, jobServiceMock);
-
-        // Act
-        sut.onKillActionHandler("chicken", mock(Player.class));
-
-        // Assert
-        verify(economyMock, times(0)).depositPlayer(any(Player.class), anyDouble());
-    }
-
-    @Test
     @Tag("Integration")
-    public void onBreakActionHandler_WithJobReward_ShouldRewardExperienceAndMoney() throws SQLException {
+    public void actionHandler_WithBreakActionAndJobReward_ShouldRewardExperienceAndMoney() throws SQLException {
         // Arrange
         TestUtils.resetDb();
         TestUtils.seedCurrencies();
@@ -191,7 +157,7 @@ public class JobListenerTest {
         JobListener sut = new JobListener(economy, jobService);
 
         // Act
-        sut.onBreakActionHandler("coal_ore", playerMock);
+        sut.actionHandler("coal_ore", playerMock, "break");
 
         // Assert
         BalanceDto actualBalance = TestUtils.getBalanceForAccountId(playerId, 1);
@@ -218,7 +184,7 @@ public class JobListenerTest {
 
     @Test
     @Tag("Integration")
-    public void onKillActionHandler_WithJobReward_ShouldRewardExperienceAndMoney() throws SQLException {
+    public void actionHandler_WithKillActionAndJobReward_ShouldRewardExperienceAndMoney() throws SQLException {
         // Arrange
         TestUtils.resetDb();
         TestUtils.seedCurrencies();
@@ -252,7 +218,7 @@ public class JobListenerTest {
         JobListener sut = new JobListener(economy, jobService);
 
         // Act
-        sut.onKillActionHandler("chicken", playerMock);
+        sut.actionHandler("chicken", playerMock, "kill");
 
         // Assert
         BalanceDto actualBalance = TestUtils.getBalanceForAccountId(playerId, 1);
