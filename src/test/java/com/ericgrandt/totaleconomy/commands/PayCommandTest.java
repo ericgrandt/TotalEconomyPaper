@@ -143,7 +143,7 @@ public class PayCommandTest {
 
     @Test
     @Tag("Unit")
-    public void onCommandHandler_WithAmountLessThanZero_ShouldReturnFalse() {
+    public void onCommandHandler_WithAmountLessThanZero_ShouldSendMessage() {
         // Arrange
         EconomyImpl economyMock = mock(EconomyImpl.class);
         Player playerMock = mock(Player.class);
@@ -163,7 +163,7 @@ public class PayCommandTest {
 
     @Test
     @Tag("Unit")
-    public void onCommandHandler_WithoutEnoughBalance_ShouldReturnFalse() {
+    public void onCommandHandler_WithoutEnoughBalance_ShouldSendMessage() {
         // Arrange
         BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
@@ -185,7 +185,7 @@ public class PayCommandTest {
 
     @Test
     @Tag("Unit")
-    public void onCommandHandler_WithInvalidPlayerArg_ShouldReturnFalse() {
+    public void onCommandHandler_WithInvalidPlayerArg_ShouldSendMessage() {
         // Arrange
         Player playerMock = mock(Player.class);
 
