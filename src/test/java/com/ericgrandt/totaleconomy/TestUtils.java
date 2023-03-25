@@ -112,22 +112,29 @@ public class TestUtils {
 
     public static void seedJobActions() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
-            String insertJobAction = "INSERT INTO te_job_action "
+            String insertBreakAction = "INSERT INTO te_job_action "
                 + "VALUES('fbc60ff9-d7e2-4704-9460-6edc2e7b6066', 'break');";
+            String insertKillAction = "INSERT INTO te_job_action "
+                + "VALUES('cd626a9a-b91e-48d2-8198-0952501f37c5', 'kill');";
 
             Statement statement = conn.createStatement();
-            statement.execute(insertJobAction);
+            statement.execute(insertBreakAction);
+            statement.execute(insertKillAction);
         }
     }
 
     public static void seedJobRewards() throws SQLException {
         try (Connection conn = TestUtils.getConnection()) {
-            String insertJobReward = "INSERT INTO te_job_reward "
+            String insertBreakReward = "INSERT INTO te_job_reward "
                 + "VALUES('07ac5e1f-39ef-46a8-ad81-a4bc1facc090', 'a56a5842-1351-4b73-a021-bcd531260cd1', "
                 + "'fbc60ff9-d7e2-4704-9460-6edc2e7b6066', 1, 'coal_ore', 0.50, 1);";
+            String insertKillAward = "INSERT INTO te_job_reward "
+                + "VALUES('26ddbaab-3b3c-496c-b027-e2fe9b21ea5b', 'a56a5842-1351-4b73-a021-bcd531260cd1', "
+                + "'cd626a9a-b91e-48d2-8198-0952501f37c5', 1, 'chicken', 1.00, 5);";
 
             Statement statement = conn.createStatement();
-            statement.execute(insertJobReward);
+            statement.execute(insertBreakReward);
+            statement.execute(insertKillAward);
         }
     }
 

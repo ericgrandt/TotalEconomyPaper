@@ -152,3 +152,26 @@ VALUES (@lumberjack_job_id, @break_action_id, 1, 'acacia_log', 0.10, 5);
 
 INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
 VALUES (@lumberjack_job_id, @break_action_id, 1, 'dark_oak_log', 0.10, 5);
+
+-- Insert kill action
+INSERT IGNORE INTO te_job_action(action_name) VALUES ('kill');
+SET @kill_action_id = (SELECT id FROM te_job_action WHERE action_name = 'kill');
+
+-- Insert Hunter job and rewards
+INSERT IGNORE INTO te_job(job_name) VALUES ('Hunter');
+SET @hunter_job_id = (SELECT id FROM te_job WHERE job_name = 'Hunter');
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@hunter_job_id, @kill_action_id, 1, 'chicken', 2.50, 10);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@hunter_job_id, @kill_action_id, 1, 'rabbit', 2.50, 10);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@hunter_job_id, @kill_action_id, 1, 'cow', 2.50, 10);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@hunter_job_id, @kill_action_id, 1, 'pig', 2.50, 10);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@hunter_job_id, @kill_action_id, 1, 'sheep', 2.50, 10);
