@@ -33,6 +33,18 @@ public class JobListener implements Listener {
         CompletableFuture.runAsync(() -> onBreakActionHandler(blockName, player));
     }
 
+    @EventHandler
+    public void onKillAction(EntityDeathEvent event) {
+        LivingEntity entity = event.getEntity();
+        String entityName = entity.getType().name().toLowerCase();
+        Player player = entity.getKiller();
+        if (player == null) {
+            return;
+        }
+
+        CompletableFuture.runAsync(() -> onKillActionHandler(entityName, player));
+    }
+
     public void onBreakActionHandler(String blockName, Player player) {
         JobRewardDto jobRewardDto = jobService.getJobReward("break", blockName);
         if (jobRewardDto == null) {
@@ -43,40 +55,14 @@ public class JobListener implements Listener {
         economy.depositPlayer(player, jobRewardDto.money().doubleValue());
     }
 
-    @EventHandler
-    public void onKillAction(EntityDeathEvent event) {
-        LivingEntity entity = event.getEntity();
-        JobRewardDto jobRewardDto = jobService.getJobReward("kill", entity.getType().name().toLowerCase());
+    public void onKillActionHandler(String entityName, Player player) {
+        JobRewardDto jobRewardDto = jobService.getJobReward("kill", entityName);
         if (jobRewardDto == null) {
-            return;
-        }
-
-        Player player = entity.getKiller();
-        if (player == null) {
             return;
         }
 
         addExperience(player, jobRewardDto);
         economy.depositPlayer(player, jobRewardDto.money().doubleValue());
-    }
-
-    private Component getLevelUpMessage(AddExperienceResult addExperienceResult) {
-        return Component.text(
-            addExperienceResult.jobName(),
-            TextColor.fromHexString("#DADFE1"),
-            TextDecoration.BOLD
-        ).append(
-            Component.text(
-                " is now level",
-                TextColor.fromHexString("#708090")
-            ).decoration(TextDecoration.BOLD, false)
-        ).append(
-            Component.text(
-                String.format(" %s", addExperienceResult.level()),
-                TextColor.fromHexString("#DADFE1"),
-                TextDecoration.BOLD
-            )
-        );
     }
 
     private void addExperience(Player player, JobRewardDto jobRewardDto) {

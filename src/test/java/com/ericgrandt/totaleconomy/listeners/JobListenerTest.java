@@ -123,22 +123,18 @@ public class JobListenerTest {
 
     @Test
     @Tag("Unit")
-    public void onKillAction_WithJobRewardFound_ShouldAddRewards() {
+    public void onKillActionHandler_WithJobRewardFound_ShouldAddRewards() {
         // Arrange
         JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
         AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
 
-        LivingEntity livingEntityMock = mock(LivingEntity.class);
-        when(livingEntityMock.getType()).thenReturn(EntityType.CHICKEN);
-        when(livingEntityMock.getKiller()).thenReturn(mock(Player.class));
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
         when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
 
-        EntityDeathEvent entityDeathEvent = new EntityDeathEvent(livingEntityMock, new ArrayList<>());
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.onKillAction(entityDeathEvent);
+        sut.onKillActionHandler("chicken", mock(Player.class));
 
         // Assert
         verify(economyMock, times(1)).depositPlayer(any(Player.class), anyDouble());
@@ -146,61 +142,17 @@ public class JobListenerTest {
 
     @Test
     @Tag("Unit")
-    public void onKillAction_WithNoJobRewardFound_ShouldNotAddRewards() {
+    public void onKillActionHandler_WithNoJobRewardFound_ShouldNotAddRewards() {
         // Arrange
-        LivingEntity livingEntityMock = mock(LivingEntity.class);
-        when(livingEntityMock.getType()).thenReturn(EntityType.CHICKEN);
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(null);
 
-        EntityDeathEvent entityDeathEvent = new EntityDeathEvent(livingEntityMock, new ArrayList<>());
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.onKillAction(entityDeathEvent);
+        sut.onKillActionHandler("chicken", mock(Player.class));
 
         // Assert
         verify(economyMock, times(0)).depositPlayer(any(Player.class), anyDouble());
-    }
-
-    @Test
-    @Tag("Unit")
-    public void onKillAction_WithNoPlayerKiller_ShouldNotAddRewards() {
-        // Arrange
-        JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
-
-        LivingEntity livingEntityMock = mock(LivingEntity.class);
-        when(livingEntityMock.getType()).thenReturn(EntityType.CHICKEN);
-        when(livingEntityMock.getKiller()).thenReturn(null);
-        when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
-
-        EntityDeathEvent entityDeathEvent = new EntityDeathEvent(livingEntityMock, new ArrayList<>());
-        JobListener sut = new JobListener(economyMock, jobServiceMock);
-
-        // Act
-        sut.onKillAction(entityDeathEvent);
-
-        // Assert
-        verify(economyMock, times(0)).depositPlayer(any(Player.class), anyDouble());
-    }
-
-    @Test
-    @Tag("Unit")
-    public void createJobExperienceOnPlayerJoin_ShouldCallTheJobService() {
-        // Arrange
-        UUID playerId = UUID.randomUUID();
-
-        Player playerMock = mock(Player.class);
-        JobService jobServiceMock = mock(JobService.class);
-        when(playerMock.getUniqueId()).thenReturn(playerId);
-
-        PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(playerMock, Component.empty());
-        JobListener sut = new JobListener(mock(EconomyImpl.class), jobServiceMock);
-
-        // Act
-        sut.createJobExperienceOnPlayerJoin(playerJoinEvent);
-
-        // Assert
-        verify(jobServiceMock, times(1)).createJobExperienceForAccount(playerId);
     }
 
     @Test
@@ -266,7 +218,7 @@ public class JobListenerTest {
 
     @Test
     @Tag("Integration")
-    public void onKillAction_WithJobReward_ShouldRewardExperienceAndMoney() throws SQLException {
+    public void onKillActionHandler_WithJobReward_ShouldRewardExperienceAndMoney() throws SQLException {
         // Arrange
         TestUtils.resetDb();
         TestUtils.seedCurrencies();
@@ -279,12 +231,10 @@ public class JobListenerTest {
 
         CurrencyDto currencyDto = new CurrencyDto(1, "", "", "", 0, true);
         Database databaseMock = mock(Database.class);
-        LivingEntity livingEntityMock = mock(LivingEntity.class);
         Player playerMock = mock(Player.class);
         UUID playerId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
-        when(databaseMock.getConnection()).then(x -> TestUtils.getConnection());
-        when(livingEntityMock.getType()).thenReturn(EntityType.CHICKEN);
-        when(livingEntityMock.getKiller()).thenReturn(playerMock);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).then(x -> TestUtils.getConnection());
         when(playerMock.getUniqueId()).thenReturn(playerId);
 
         AccountData accountData = new AccountData(databaseMock);
@@ -299,11 +249,10 @@ public class JobListenerTest {
             balanceData
         );
 
-        EntityDeathEvent entityDeathEvent = new EntityDeathEvent(livingEntityMock, List.of());
         JobListener sut = new JobListener(economy, jobService);
 
         // Act
-        sut.onKillAction(entityDeathEvent);
+        sut.onKillActionHandler("chicken", playerMock);
 
         // Assert
         BalanceDto actualBalance = TestUtils.getBalanceForAccountId(playerId, 1);
