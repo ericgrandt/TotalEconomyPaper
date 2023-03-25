@@ -19,3 +19,4 @@ A job reward determines how much experience and money a player gets for performi
 Each job reward must have a single action associated with it. They describe the action a user must take in order to gain the reward. Currently, the following actions are implemented:
 
 - `break`: action for breaking blocks
+- `kill`: action for killing entities
