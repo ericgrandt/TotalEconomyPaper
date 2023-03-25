@@ -36,11 +36,12 @@ public class JobListener implements Listener {
     @EventHandler
     public void onKillAction(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
-        String entityName = entity.getType().name().toLowerCase();
         Player player = entity.getKiller();
         if (player == null) {
             return;
         }
+
+        String entityName = entity.getType().name().toLowerCase();
 
         CompletableFuture.runAsync(() -> onKillActionHandler(entityName, player));
     }
