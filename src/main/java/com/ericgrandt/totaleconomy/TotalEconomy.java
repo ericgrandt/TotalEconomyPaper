@@ -15,6 +15,8 @@ import com.ericgrandt.totaleconomy.listeners.PlayerListener;
 import com.ericgrandt.totaleconomy.services.JobService;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,11 +30,16 @@ public class TotalEconomy extends JavaPlugin implements Listener {
     private final FileConfiguration config = getConfig();
     private final Logger logger = Logger.getLogger("Minecraft");
 
+    private final Map<String, Boolean> enabledFeatures = new HashMap<>();
+
     private Database database;
     private EconomyImpl economy;
+    private JobService jobService;
 
     @Override
     public void onEnable() {
+        setFeatureEnabledStatus();
+
         database = new Database(
             config.getString("database.url"),
             config.getString("database.user"),
@@ -56,7 +63,9 @@ public class TotalEconomy extends JavaPlugin implements Listener {
 
         AccountData accountData = new AccountData(database);
         BalanceData balanceData = new BalanceData(database);
+        JobData jobData = new JobData(database);
         economy = new EconomyImpl(logger, this.isEnabled(), defaultCurrency, accountData, balanceData);
+        jobService = new JobService(logger, jobData);
 
         getServer().getServicesManager().register(
             Economy.class,
@@ -73,9 +82,7 @@ public class TotalEconomy extends JavaPlugin implements Listener {
         Objects.requireNonNull(this.getCommand("balance")).setExecutor(new BalanceCommand(economy));
         Objects.requireNonNull(this.getCommand("pay")).setExecutor(new PayCommand(new BukkitWrapper(), economy));
 
-        if (config.getBoolean("features.jobs")) {
-            JobData jobData = new JobData(database);
-            JobService jobService = new JobService(logger, jobData);
+        if (enabledFeatures.get("jobs")) {
             JobCommand jobCommand = new JobCommand(logger, jobService);
 
             Objects.requireNonNull(this.getCommand("job")).setExecutor(jobCommand);
@@ -83,13 +90,14 @@ public class TotalEconomy extends JavaPlugin implements Listener {
     }
 
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new PlayerListener(economy), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(economy, jobService), this);
 
-        if (config.getBoolean("features.jobs")) {
-            JobData jobData = new JobData(database);
-            JobService jobService = new JobService(logger, jobData);
-
+        if (enabledFeatures.get("jobs")) {
             getServer().getPluginManager().registerEvents(new JobListener(economy, jobService), this);
         }
+    }
+
+    private void setFeatureEnabledStatus() {
+        enabledFeatures.put("jobs", config.getBoolean("features.jobs"));
     }
 }
