@@ -1,7 +1,11 @@
 package com.ericgrandt.totaleconomy.commands;
 
+import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.concurrent.CompletableFuture;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,43 +29,56 @@ public class PayCommand implements CommandExecutor {
             return false;
         }
 
-        Player target = bukkitWrapper.getPlayerExact(args[0]);
-        if (target == null) {
-            player.sendMessage("Invalid player specified");
-            return false;
-        }
-        if (!isValidDouble(args[1])) {
-            player.sendMessage("Invalid amount specified");
-            return false;
-        }
-        if (player.getUniqueId() == target.getUniqueId()) {
-            player.sendMessage("You cannot pay yourself");
+        if (args.length != 2) {
             return false;
         }
 
-        double amount = Double.parseDouble(args[1]);
+        Player targetPlayer = bukkitWrapper.getPlayerExact(args[0]);
+        CompletableFuture.runAsync(() -> onCommandHandler(player, targetPlayer, args[1]));
+
+        return true;
+    }
+
+    public void onCommandHandler(Player player, Player targetPlayer, String amountArg) {
+        if (targetPlayer == null) {
+            player.sendMessage("Invalid player specified");
+            return;
+        }
+        if (!isValidDouble(amountArg)) {
+            player.sendMessage("Invalid amount specified");
+            return;
+        }
+        if (player.getUniqueId() == targetPlayer.getUniqueId()) {
+            player.sendMessage("You cannot pay yourself");
+            return;
+        }
+
+        double amount = scaleAmountToNumFractionDigits(Double.parseDouble(amountArg));
+        if (amount <= 0) {
+            player.sendMessage("Amount must be more than 0");
+            return;
+        }
+
         if (!economy.has(player, amount)) {
             player.sendMessage("You don't have enough to pay this player");
-            return false;
+            return;
         }
 
         EconomyResponse withdrawResponse = economy.withdrawPlayer(player, amount);
         if (withdrawResponse.type == EconomyResponse.ResponseType.FAILURE) {
             player.sendMessage("Error executing command");
-            return false;
+            return;
         }
 
-        EconomyResponse depositResponse =  economy.depositPlayer(target, amount);
+        EconomyResponse depositResponse =  economy.depositPlayer(targetPlayer, amount);
         if (depositResponse.type == EconomyResponse.ResponseType.FAILURE) {
             player.sendMessage("Error executing command");
-            return false;
+            return;
         }
 
         String formattedAmount = economy.format(amount);
-        player.sendMessage(String.format("You sent %s to %s", formattedAmount, target.getName()));
-        target.sendMessage(String.format("You received %s from %s", formattedAmount, player.getName()));
-
-        return true;
+        player.sendMessage(String.format("You sent %s to %s", formattedAmount, targetPlayer.getName()));
+        targetPlayer.sendMessage(String.format("You received %s from %s", formattedAmount, player.getName()));
     }
 
     private boolean isValidDouble(String amount) {
@@ -71,5 +88,13 @@ public class PayCommand implements CommandExecutor {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    private double scaleAmountToNumFractionDigits(double amount) {
+        CurrencyDto defaultCurrency = economy.getDefaultCurrency();
+        return BigDecimal.valueOf(amount).setScale(
+            defaultCurrency.numFractionDigits(),
+            RoundingMode.DOWN
+        ).doubleValue();
     }
 }

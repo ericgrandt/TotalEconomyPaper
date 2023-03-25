@@ -24,9 +24,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.Tag;
@@ -78,7 +76,7 @@ public class JobCommandTest {
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithSuccess_ShouldSendPlayerMessage() throws SQLException {
+    public void onCommandHandler_WithSuccess_ShouldSendPlayerMessage() throws SQLException {
         // Arrange
         UUID playerUuid = UUID.randomUUID();
         List<JobExperience> jobExperienceList = List.of(
@@ -94,12 +92,7 @@ public class JobCommandTest {
         JobCommand sut = new JobCommand(loggerMock, jobServiceMock);
 
         // Act
-        sut.onCommand(
-            playerMock,
-            mock(Command.class),
-            "",
-            null
-        );
+        sut.onCommandHandler(playerMock);
         Component expected = Component.newline()
             .append(Component.text("Jobs", TextColor.fromHexString("#708090"), TextDecoration.BOLD, TextDecoration.UNDERLINED))
             .append(Component.newline())
@@ -125,7 +118,7 @@ public class JobCommandTest {
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithException_ShouldReturnFalse() throws SQLException {
+    public void onCommandHandler_WithException_ShouldSendPlayerErrorMessage() throws SQLException {
         // Arrange
         UUID playerUuid = UUID.randomUUID();
 
@@ -137,37 +130,7 @@ public class JobCommandTest {
         JobCommand sut = new JobCommand(loggerMock, jobServiceMock);
 
         // Act
-        boolean actual = sut.onCommand(
-            playerMock,
-            mock(Command.class),
-            "",
-            null
-        );
-
-        // Assert
-        assertFalse(actual);
-    }
-
-    @Test
-    @Tag("Unit")
-    public void onCommand_WithException_ShouldSendPlayerMessage() throws SQLException {
-        // Arrange
-        UUID playerUuid = UUID.randomUUID();
-
-        Player playerMock = mock(Player.class);
-        JobService jobServiceMock = mock(JobService.class);
-        when(playerMock.getUniqueId()).thenReturn(playerUuid);
-        when(jobServiceMock.getExperienceForAllJobs(playerUuid)).thenThrow(SQLException.class);
-
-        JobCommand sut = new JobCommand(loggerMock, jobServiceMock);
-
-        // Act
-        sut.onCommand(
-            playerMock,
-            mock(Command.class),
-            "",
-            null
-        );
+        sut.onCommandHandler(playerMock);
 
         // Assert
         verify(playerMock).sendMessage(
@@ -177,7 +140,7 @@ public class JobCommandTest {
 
     @Test
     @Tag("Unit")
-    public void onCommand_WithException_ShouldLogException() throws SQLException {
+    public void onCommandHandler_WithException_ShouldLogException() throws SQLException {
         // Arrange
         UUID playerUuid = UUID.randomUUID();
 
@@ -189,12 +152,7 @@ public class JobCommandTest {
         JobCommand sut = new JobCommand(loggerMock, jobServiceMock);
 
         // Act
-        sut.onCommand(
-            playerMock,
-            mock(Command.class),
-            "",
-            null
-        );
+        sut.onCommandHandler(playerMock);
 
         // Assert
         verify(loggerMock).log(
@@ -206,7 +164,7 @@ public class JobCommandTest {
 
     @Test
     @Tag("Integration")
-    public void onCommand_ShouldSendMessageWithJobLevelsToPlayer() throws SQLException {
+    public void onCommandHandler_ShouldSendMessageWithJobLevelsToPlayer() throws SQLException {
         // Arrange
         TestUtils.resetDb();
         TestUtils.seedCurrencies();
@@ -217,17 +175,17 @@ public class JobCommandTest {
         UUID playerUuid = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
 
         Database databaseMock = mock(Database.class);
-        CommandSender senderMock = mock(Player.class);
+        Player playerMock = mock(Player.class);
         when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
         when(databaseMock.getDataSource().getConnection()).then(x -> TestUtils.getConnection());
-        when(((OfflinePlayer) senderMock).getUniqueId()).thenReturn(playerUuid);
+        when((playerMock).getUniqueId()).thenReturn(playerUuid);
 
         JobData jobData = new JobData(databaseMock);
         JobService jobService = new JobService(loggerMock, jobData);
         JobCommand sut = new JobCommand(loggerMock, jobService);
 
         // Act
-        boolean actual = sut.onCommand(senderMock, mock(Command.class), "", null);
+        sut.onCommandHandler(playerMock);
         Component expected = Component.newline()
             .append(Component.text("Jobs", TextColor.fromHexString("#708090"), TextDecoration.BOLD, TextDecoration.UNDERLINED))
             .append(Component.newline())
@@ -248,7 +206,6 @@ public class JobCommandTest {
             .append(Component.newline());
 
         // Assert
-        verify(senderMock).sendMessage(expected);
-        assertTrue(actual);
+        verify(playerMock).sendMessage(expected);
     }
 }
