@@ -7,11 +7,13 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -176,7 +178,7 @@ public class TestUtils {
                         );
                     }
 
-                    return null;
+                    return new AccountDto("", Timestamp.valueOf("2000-01-01"));
                 }
             }
         }
@@ -200,7 +202,7 @@ public class TestUtils {
                         );
                     }
 
-                    return null;
+                    return new BalanceDto("", "", 0, BigDecimal.ONE);
                 }
             }
         }

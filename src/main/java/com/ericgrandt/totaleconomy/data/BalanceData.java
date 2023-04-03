@@ -48,4 +48,37 @@ public class BalanceData {
             return stmt.executeUpdate();
         }
     }
+
+    public void transfer(UUID fromAccountId, UUID toAccountId, int currencyId, double amount) throws SQLException {
+        String withdrawQuery = "UPDATE te_balance SET balance = balance - ? WHERE account_id = ? AND currency_id = ?";
+        String depositQuery = "UPDATE te_balance SET balance = balance + ? WHERE account_id = ? AND currency_id = ?";
+
+        try (
+            Connection conn = database.getDataSource().getConnection()
+        ) {
+            conn.setAutoCommit(false);
+
+            try (
+                PreparedStatement withdrawStmt = conn.prepareStatement(withdrawQuery);
+                PreparedStatement updateStmt = conn.prepareStatement(depositQuery)
+            ) {
+                withdrawStmt.setBigDecimal(1, BigDecimal.valueOf(amount));
+                withdrawStmt.setString(2, fromAccountId.toString());
+                withdrawStmt.setInt(3, currencyId);
+                withdrawStmt.executeUpdate();
+
+                updateStmt.setBigDecimal(1, BigDecimal.valueOf(amount));
+                updateStmt.setString(2, toAccountId.toString());
+                updateStmt.setInt(3, currencyId);
+                updateStmt.executeUpdate();
+
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
 }

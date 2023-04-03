@@ -169,4 +169,34 @@ public class BalanceDataTest {
         assertNotNull(actualBalanceDto);
         assertEquals(BigDecimal.valueOf(100).setScale(2, RoundingMode.DOWN), actualBalanceDto.balance());
     }
+
+    @Test
+    @Tag("Integration")
+    public void transfer_ShouldUpdateBalances() throws SQLException {
+        // Arrange
+        TestUtils.resetDb();
+        TestUtils.seedCurrencies();
+        TestUtils.seedAccounts();
+
+        Database databaseMock = mock(Database.class);
+        when(databaseMock.getDataSource()).thenReturn(mock(HikariDataSource.class));
+        when(databaseMock.getDataSource().getConnection()).thenReturn(TestUtils.getConnection());
+
+        BalanceData sut = new BalanceData(databaseMock);
+
+        UUID fromAccountId = UUID.fromString("62694fb0-07cc-4396-8d63-4f70646d75f0");
+        UUID toAccountId = UUID.fromString("551fe9be-f77f-4bcb-81db-548db6e77aea");
+
+        // Act
+        sut.transfer(fromAccountId, toAccountId, 1, 10);
+
+        BalanceDto actualFromBalanceDto = TestUtils.getBalanceForAccountId(fromAccountId, 1);
+        BalanceDto actualToBalanceDto = TestUtils.getBalanceForAccountId(toAccountId, 1);
+        BigDecimal expectedFromBalance = BigDecimal.valueOf(40).setScale(2, RoundingMode.DOWN);
+        BigDecimal expectedToBalance = BigDecimal.valueOf(110).setScale(2, RoundingMode.DOWN);
+
+        // Assert
+        assertEquals(expectedFromBalance, actualFromBalanceDto.balance());
+        assertEquals(expectedToBalance, actualToBalanceDto.balance());
+    }
 }
