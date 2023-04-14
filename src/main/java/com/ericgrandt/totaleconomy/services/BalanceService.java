@@ -16,7 +16,7 @@ public class BalanceService {
 
     public TransferResult transfer(UUID fromPlayer, UUID toPlayer, double amount) throws SQLException {
         if (amount <= 0) {
-            return new TransferResult(ResultType.FAILURE, "Amount less than or equal to zero");
+            return new TransferResult(ResultType.FAILURE, "Amount must be greater than zero");
         }
 
         BigDecimal fromBalance = balanceData.getBalance(fromPlayer, 1);

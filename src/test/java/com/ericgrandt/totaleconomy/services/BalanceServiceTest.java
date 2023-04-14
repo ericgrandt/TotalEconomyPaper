@@ -72,7 +72,7 @@ public class BalanceServiceTest {
 
         // Act
         TransferResult actual = sut.transfer(fromPlayer, toPlayer, amount);
-        TransferResult expected = new TransferResult(ResultType.FAILURE, "Amount less than or equal to zero");
+        TransferResult expected = new TransferResult(ResultType.FAILURE, "Amount must be greater than zero");
 
         // Assert
         assertEquals(expected, actual);
@@ -92,7 +92,7 @@ public class BalanceServiceTest {
 
         // Act
         TransferResult actual = sut.transfer(fromPlayer, toPlayer, amount);
-        TransferResult expected = new TransferResult(ResultType.FAILURE, "Amount less than or equal to zero");
+        TransferResult expected = new TransferResult(ResultType.FAILURE, "Amount must be greater than zero");
 
         // Assert
         assertEquals(expected, actual);
