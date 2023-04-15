@@ -2,11 +2,17 @@ package com.ericgrandt.totaleconomy.commands;
 
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.models.TransferResult;
+import com.ericgrandt.totaleconomy.models.TransferResult.ResultType;
+import com.ericgrandt.totaleconomy.services.BalanceService;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.SQLException;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import net.milkbowl.vault.economy.EconomyResponse;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,12 +20,16 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class PayCommand implements CommandExecutor {
+    private final Logger logger;
     private final BukkitWrapper bukkitWrapper;
     private final EconomyImpl economy;
+    private final BalanceService balanceService;
 
-    public PayCommand(BukkitWrapper bukkitWrapper, EconomyImpl economy) {
+    public PayCommand(Logger logger, BukkitWrapper bukkitWrapper, EconomyImpl economy, BalanceService balanceService) {
+        this.logger = logger;
         this.bukkitWrapper = bukkitWrapper;
         this.economy = economy;
+        this.balanceService = balanceService;
     }
 
     @Override
@@ -48,31 +58,28 @@ public class PayCommand implements CommandExecutor {
             player.sendMessage("Invalid amount specified");
             return;
         }
-        if (player.getUniqueId() == targetPlayer.getUniqueId()) {
+
+        UUID playerUUID = player.getUniqueId();
+        UUID targetUUID = targetPlayer.getUniqueId();
+        if (playerUUID == targetUUID) {
             player.sendMessage("You cannot pay yourself");
             return;
         }
 
         double amount = scaleAmountToNumFractionDigits(Double.parseDouble(amountArg));
-        if (amount <= 0) {
-            player.sendMessage("Amount must be more than 0");
-            return;
-        }
-
-        if (!economy.has(player, amount)) {
-            player.sendMessage("You don't have enough to pay this player");
-            return;
-        }
-
-        EconomyResponse withdrawResponse = economy.withdrawPlayer(player, amount);
-        if (withdrawResponse.type == EconomyResponse.ResponseType.FAILURE) {
-            player.sendMessage("Error executing command");
-            return;
-        }
-
-        EconomyResponse depositResponse =  economy.depositPlayer(targetPlayer, amount);
-        if (depositResponse.type == EconomyResponse.ResponseType.FAILURE) {
-            player.sendMessage("Error executing command");
+        try {
+            TransferResult transferResult = balanceService.transfer(playerUUID, targetUUID, amount);
+            if (transferResult.resultType() == ResultType.FAILURE) {
+                player.sendMessage(transferResult.message());
+                return;
+            }
+        } catch (SQLException e) {
+            logger.log(
+                Level.SEVERE,
+                "An exception occurred during the handling of the pay command.",
+                e
+            );
+            player.sendMessage("Error executing command. Contact an administrator.");
             return;
         }
 

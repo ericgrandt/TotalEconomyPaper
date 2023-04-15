@@ -12,6 +12,7 @@ import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.listeners.JobListener;
 import com.ericgrandt.totaleconomy.listeners.PlayerListener;
+import com.ericgrandt.totaleconomy.services.BalanceService;
 import com.ericgrandt.totaleconomy.services.JobService;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
 import java.sql.SQLException;
@@ -35,6 +36,7 @@ public class TotalEconomy extends JavaPlugin implements Listener {
     private Database database;
     private EconomyImpl economy;
     private JobService jobService;
+    private BalanceService balanceService;
 
     @Override
     public void onEnable() {
@@ -66,6 +68,7 @@ public class TotalEconomy extends JavaPlugin implements Listener {
         JobData jobData = new JobData(database);
         economy = new EconomyImpl(logger, this.isEnabled(), defaultCurrency, accountData, balanceData);
         jobService = new JobService(logger, jobData);
+        balanceService = new BalanceService(balanceData);
 
         getServer().getServicesManager().register(
             Economy.class,
@@ -80,7 +83,9 @@ public class TotalEconomy extends JavaPlugin implements Listener {
 
     private void registerCommands() {
         Objects.requireNonNull(this.getCommand("balance")).setExecutor(new BalanceCommand(economy));
-        Objects.requireNonNull(this.getCommand("pay")).setExecutor(new PayCommand(new BukkitWrapper(), economy));
+        Objects.requireNonNull(this.getCommand("pay")).setExecutor(
+            new PayCommand(logger, new BukkitWrapper(), economy, balanceService)
+        );
 
         if (enabledFeatures.get("jobs")) {
             JobCommand jobCommand = new JobCommand(logger, jobService);
