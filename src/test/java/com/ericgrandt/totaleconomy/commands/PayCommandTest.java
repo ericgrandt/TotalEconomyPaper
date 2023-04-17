@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -15,14 +16,17 @@ import com.ericgrandt.totaleconomy.data.BalanceData;
 import com.ericgrandt.totaleconomy.data.Database;
 import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.models.TransferResult;
+import com.ericgrandt.totaleconomy.models.TransferResult.ResultType;
+import com.ericgrandt.totaleconomy.services.BalanceService;
 import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
 import com.zaxxer.hikari.HikariDataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -54,7 +58,7 @@ public class PayCommandTest {
         BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
         CommandSender senderMock = mock(ConsoleCommandSender.class);
-        PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
+        PayCommand sut = new PayCommand(loggerMock, bukkitWrapperMock, economyMock, mock(BalanceService.class));
 
         // Act
         String[] args = {"", ""};
@@ -72,7 +76,7 @@ public class PayCommandTest {
         BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
         EconomyImpl economyMock = mock(EconomyImpl.class);
 
-        PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
+        PayCommand sut = new PayCommand(loggerMock, bukkitWrapperMock, economyMock, mock(BalanceService.class));
 
         // Act
         String[] args = {"playerName"};
@@ -89,109 +93,15 @@ public class PayCommandTest {
 
     @Test
     @Tag("Unit")
-    public void onCommandHandler_WithAmountContainingTooManyDecimalPlaces_ShouldCallWithdrawWithScaledAmount() {
-        // Arrange
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        Player playerMock = mock(Player.class);
-        Player targetMock = mock(Player.class);
-        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
-        when(economyMock.has(playerMock, 100.01)).thenReturn(true);
-        when(economyMock.withdrawPlayer(any(Player.class), anyDouble())).thenReturn(new EconomyResponse(0, 0, EconomyResponse.ResponseType.SUCCESS, ""));
-        when(economyMock.depositPlayer(any(Player.class), anyDouble())).thenReturn(new EconomyResponse(0, 0, EconomyResponse.ResponseType.SUCCESS, ""));
-        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
-
-        PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
-
-        // Act
-        sut.onCommandHandler(
-            playerMock,
-            targetMock,
-            "100.0191"
-        );
-
-        // Assert
-        verify(economyMock).withdrawPlayer(playerMock, 100.01);
-    }
-
-    @Test
-    @Tag("Unit")
-    public void onCommandHandler_WithAmountContainingTooLittleDecimalPlaces_ShouldCallWithdrawWithScaledAmount() {
-        // Arrange
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        Player playerMock = mock(Player.class);
-        Player targetMock = mock(Player.class);
-        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
-        when(economyMock.has(playerMock, 100.10)).thenReturn(true);
-        when(economyMock.withdrawPlayer(any(Player.class), anyDouble())).thenReturn(new EconomyResponse(0, 0, EconomyResponse.ResponseType.SUCCESS, ""));
-        when(economyMock.depositPlayer(any(Player.class), anyDouble())).thenReturn(new EconomyResponse(0, 0, EconomyResponse.ResponseType.SUCCESS, ""));
-        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
-
-        PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
-
-        // Act
-        sut.onCommandHandler(
-            playerMock,
-            targetMock,
-            "100.1"
-        );
-
-        // Assert
-        verify(economyMock).withdrawPlayer(playerMock, 100.10);
-    }
-
-    @Test
-    @Tag("Unit")
-    public void onCommandHandler_WithAmountLessThanZero_ShouldSendMessage() {
-        // Arrange
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        Player playerMock = mock(Player.class);
-        Player targetMock = mock(Player.class);
-        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
-        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
-
-        PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
-
-        // Act
-        sut.onCommandHandler(playerMock, targetMock, "-10");
-
-        // Assert
-        verify(playerMock).sendMessage("Amount must be more than 0");
-    }
-
-    @Test
-    @Tag("Unit")
-    public void onCommandHandler_WithoutEnoughBalance_ShouldSendMessage() {
-        // Arrange
-        BukkitWrapper bukkitWrapperMock = mock(BukkitWrapper.class);
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        Player playerMock = mock(Player.class);
-        Player targetMock = mock(Player.class);
-        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
-        when(economyMock.has(playerMock, 100)).thenReturn(false);
-        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
-
-        PayCommand sut = new PayCommand(bukkitWrapperMock, economyMock);
-
-        // Act
-        sut.onCommandHandler(playerMock, targetMock, "100");
-
-        // Assert
-        verify(playerMock).sendMessage("You don't have enough to pay this player");
-    }
-
-    @Test
-    @Tag("Unit")
     public void onCommandHandler_WithInvalidPlayerArg_ShouldSendMessage() {
         // Arrange
         Player playerMock = mock(Player.class);
 
         PayCommand sut = new PayCommand(
+            loggerMock,
             mock(BukkitWrapper.class),
-            mock(EconomyImpl.class)
+            mock(EconomyImpl.class),
+            mock(BalanceService.class)
         );
 
         // Act
@@ -208,8 +118,10 @@ public class PayCommandTest {
         Player playerMock = mock(Player.class);
 
         PayCommand sut = new PayCommand(
+            loggerMock,
             mock(BukkitWrapper.class),
-            mock(EconomyImpl.class)
+            mock(EconomyImpl.class),
+            mock(BalanceService.class)
         );
 
         // Act
@@ -221,71 +133,16 @@ public class PayCommandTest {
 
     @Test
     @Tag("Unit")
-    public void onCommandHandler_WithFailedWithdraw_ShouldSendMessage() {
-        // Arrange
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        Player playerMock = mock(Player.class);
-        Player targetMock = mock(Player.class);
-        EconomyResponse withdrawResponse = new EconomyResponse(
-            100,
-            100,
-            EconomyResponse.ResponseType.FAILURE,
-            ""
-        );
-        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
-        when(economyMock.has(playerMock, 100)).thenReturn(true);
-        when(economyMock.withdrawPlayer(playerMock, 100)).thenReturn(withdrawResponse);
-        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
-
-        PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
-
-        // Act
-        sut.onCommandHandler(playerMock, targetMock, "100");
-
-        // Assert
-        verify(playerMock).sendMessage("Error executing command");
-    }
-
-    @Test
-    @Tag("Unit")
-    public void onCommandHandler_WithFailedDeposit_ShouldSendMessage() {
-        // Arrange
-        EconomyImpl economyMock = mock(EconomyImpl.class);
-        Player playerMock = mock(Player.class);
-        Player targetMock = mock(Player.class);
-        EconomyResponse depositResponse = new EconomyResponse(
-            100,
-            100,
-            EconomyResponse.ResponseType.FAILURE,
-            ""
-        );
-        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
-        when(economyMock.has(playerMock, 100)).thenReturn(true);
-        when(economyMock.withdrawPlayer(playerMock, 100)).thenReturn(mock(EconomyResponse.class));
-        when(economyMock.depositPlayer(targetMock, 100)).thenReturn(depositResponse);
-        when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
-        when(targetMock.getUniqueId()).thenReturn(UUID.randomUUID());
-
-        PayCommand sut = new PayCommand(mock(BukkitWrapper.class), economyMock);
-
-        // Act
-        sut.onCommandHandler(playerMock, targetMock, "100");
-
-        // Assert
-        verify(playerMock).sendMessage("Error executing command");
-    }
-
-    @Test
-    @Tag("Unit")
     public void onCommandHandler_WithSameSenderAndTarget_ShouldSendMessage() {
         // Arrange
         Player playerMock = mock(Player.class);
         when(playerMock.getUniqueId()).thenReturn(UUID.randomUUID());
 
         PayCommand sut = new PayCommand(
+            loggerMock,
             mock(BukkitWrapper.class),
-            mock(EconomyImpl.class)
+            mock(EconomyImpl.class),
+            mock(BalanceService.class)
         );
 
         // Act
@@ -293,6 +150,129 @@ public class PayCommandTest {
 
         // Assert
         verify(playerMock).sendMessage("You cannot pay yourself");
+    }
+
+    @Test
+    @Tag("Unit")
+    public void onCommandHandler_WithAmountContainingTooManyDecimalPlaces_ShouldCallTransferWithScaledAmount() throws SQLException {
+        // Arrange
+        EconomyImpl economyMock = mock(EconomyImpl.class);
+        BalanceService balanceServiceMock = mock(BalanceService.class);
+        Player playerMock = mock(Player.class);
+        UUID playerUUID = UUID.randomUUID();
+        Player targetMock = mock(Player.class);
+        UUID targetUUID = UUID.randomUUID();
+        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
+        when(balanceServiceMock.transfer(any(UUID.class), any(UUID.class), anyDouble())).thenReturn(
+            new TransferResult(ResultType.SUCCESS, "")
+        );
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+        when(targetMock.getUniqueId()).thenReturn(targetUUID);
+
+        PayCommand sut = new PayCommand(loggerMock, mock(BukkitWrapper.class), economyMock, balanceServiceMock);
+
+        // Act
+        sut.onCommandHandler(
+            playerMock,
+            targetMock,
+            "100.0191"
+        );
+
+        // Assert
+        verify(balanceServiceMock).transfer(playerUUID, targetUUID, 100.01);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void onCommandHandler_WithAmountContainingTooLittleDecimalPlaces_ShouldCallTransferWithScaledAmount() throws SQLException {
+        // Arrange
+        EconomyImpl economyMock = mock(EconomyImpl.class);
+        BalanceService balanceServiceMock = mock(BalanceService.class);
+        Player playerMock = mock(Player.class);
+        UUID playerUUID = UUID.randomUUID();
+        Player targetMock = mock(Player.class);
+        UUID targetUUID = UUID.randomUUID();
+        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
+        when(balanceServiceMock.transfer(any(UUID.class), any(UUID.class), anyDouble())).thenReturn(
+            new TransferResult(ResultType.SUCCESS, "")
+        );
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+        when(targetMock.getUniqueId()).thenReturn(targetUUID);
+
+        PayCommand sut = new PayCommand(loggerMock, mock(BukkitWrapper.class), economyMock, balanceServiceMock);
+
+        // Act
+        sut.onCommandHandler(
+            playerMock,
+            targetMock,
+            "100.1"
+        );
+
+        // Assert
+        verify(balanceServiceMock).transfer(playerUUID, targetUUID, 100.10);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void onCommandHandler_WithFailedTransfer_ShouldSendMessage() throws SQLException {
+        // Arrange
+        EconomyImpl economyMock = mock(EconomyImpl.class);
+        BalanceService balanceServiceMock = mock(BalanceService.class);
+        Player playerMock = mock(Player.class);
+        UUID playerUUID = UUID.randomUUID();
+        Player targetMock = mock(Player.class);
+        UUID targetUUID = UUID.randomUUID();
+        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
+        when(balanceServiceMock.transfer(any(UUID.class), any(UUID.class), anyDouble())).thenReturn(
+            new TransferResult(ResultType.FAILURE, "Test error message")
+        );
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+        when(targetMock.getUniqueId()).thenReturn(targetUUID);
+
+        PayCommand sut = new PayCommand(loggerMock, mock(BukkitWrapper.class), economyMock, balanceServiceMock);
+
+        // Act
+        sut.onCommandHandler(
+            playerMock,
+            targetMock,
+            "100.10"
+        );
+
+        // Assert
+        verify(playerMock).sendMessage("Test error message");
+    }
+
+    @Test
+    @Tag("Unit")
+    public void onCommandHandler_WithSqlExceptionFromTransfer_ShouldLogErrorAndSendMessage() throws SQLException {
+        // Arrange
+        EconomyImpl economyMock = mock(EconomyImpl.class);
+        BalanceService balanceServiceMock = mock(BalanceService.class);
+        Player playerMock = mock(Player.class);
+        UUID playerUUID = UUID.randomUUID();
+        Player targetMock = mock(Player.class);
+        UUID targetUUID = UUID.randomUUID();
+        when(economyMock.getDefaultCurrency()).thenReturn(defaultCurrency);
+        when(balanceServiceMock.transfer(any(UUID.class), any(UUID.class), anyDouble())).thenThrow(SQLException.class);
+        when(playerMock.getUniqueId()).thenReturn(playerUUID);
+        when(targetMock.getUniqueId()).thenReturn(targetUUID);
+
+        PayCommand sut = new PayCommand(loggerMock, mock(BukkitWrapper.class), economyMock, balanceServiceMock);
+
+        // Act
+        sut.onCommandHandler(
+            playerMock,
+            targetMock,
+            "100.10"
+        );
+
+        // Assert
+        verify(loggerMock).log(
+            eq(Level.SEVERE),
+            eq("An exception occurred during the handling of the pay command."),
+            any(SQLException.class)
+        );
+        verify(playerMock).sendMessage("Error executing command. Contact an administrator.");
     }
 
     @Test
@@ -332,8 +312,10 @@ public class PayCommandTest {
         BalanceData balanceData = new BalanceData(databaseMock);
 
         PayCommand sut = new PayCommand(
+            loggerMock,
             mock(BukkitWrapper.class),
-            new EconomyImpl(loggerMock, true, defaultCurrency, accountData, balanceData)
+            new EconomyImpl(loggerMock, true, defaultCurrency, accountData, balanceData),
+            new BalanceService(balanceData)
         );
 
         // Act

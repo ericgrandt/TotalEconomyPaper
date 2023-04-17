@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.ericgrandt"
-version = "0.5.0"
+version = "0.6.0"
 
 repositories {
     mavenCentral()
@@ -15,8 +15,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT")
-    testImplementation("io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
+    testImplementation("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
 
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
     testImplementation("com.github.MilkBowl:VaultAPI:1.7")
@@ -59,5 +59,5 @@ tasks.build {
 
 tasks.runServer {
     dependsOn(tasks.shadowJar)
-    minecraftVersion("1.19.3")
+    minecraftVersion("1.19.4")
 }
