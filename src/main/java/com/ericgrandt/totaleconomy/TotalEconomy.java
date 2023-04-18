@@ -33,7 +33,6 @@ public class TotalEconomy extends JavaPlugin implements Listener {
 
     private final Map<String, Boolean> enabledFeatures = new HashMap<>();
 
-    private Database database;
     private EconomyImpl economy;
     private JobService jobService;
     private BalanceService balanceService;
@@ -42,7 +41,7 @@ public class TotalEconomy extends JavaPlugin implements Listener {
     public void onEnable() {
         setFeatureEnabledStatus();
 
-        database = new Database(
+        Database database = new Database(
             config.getString("database.url"),
             config.getString("database.user"),
             config.getString("database.password")

@@ -458,7 +458,7 @@ public class JobServiceTest {
 
     @Test
     @Tag("Unit")
-    public void calculateLevelFromExperience_WithExperienceOf0_ShouldReturnOne() {
+    public void calculateLevelFromExperience_WithExperienceOfZero_ShouldReturnOne() {
         // Arrange
         JobService sut = new JobService(loggerMock, mock(JobData.class));
 
