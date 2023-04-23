@@ -2,13 +2,18 @@ package com.ericgrandt.totaleconomy.listeners;
 
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.impl.JobExperienceBar;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import com.ericgrandt.totaleconomy.services.JobService;
+import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,18 +24,21 @@ import org.bukkit.event.entity.EntityDeathEvent;
 public class JobListener implements Listener {
     private final EconomyImpl economy;
     private final JobService jobService;
+    private final BukkitWrapper bukkitWrapper;
 
-    public JobListener(EconomyImpl economy, JobService jobService) {
+    public JobListener(EconomyImpl economy, JobService jobService, BukkitWrapper bukkitWrapper) {
         this.economy = economy;
         this.jobService = jobService;
+        this.bukkitWrapper = bukkitWrapper;
     }
 
     @EventHandler
     public void onBreakAction(BlockBreakEvent event) {
         Player player = event.getPlayer();
         String blockName = event.getBlock().getType().name().toLowerCase();
+        JobExperienceBar jobExperienceBar = getOrCreateJobExperienceBar(player.getUniqueId());
 
-        CompletableFuture.runAsync(() -> actionHandler(blockName, player, "break"));
+        CompletableFuture.runAsync(() -> actionHandler(blockName, player, "break", jobExperienceBar));
     }
 
     @EventHandler
@@ -42,11 +50,12 @@ public class JobListener implements Listener {
         }
 
         String entityName = entity.getType().name().toLowerCase();
+        JobExperienceBar jobExperienceBar = getOrCreateJobExperienceBar(player.getUniqueId());
 
-        CompletableFuture.runAsync(() -> actionHandler(entityName, player, "kill"));
+        CompletableFuture.runAsync(() -> actionHandler(entityName, player, "kill", jobExperienceBar));
     }
 
-    public void actionHandler(String materialName, Player player, String action) {
+    public void actionHandler(String materialName, Player player, String action, JobExperienceBar jobExperienceBar) {
         JobRewardDto jobRewardDto = jobService.getJobReward(action, materialName);
         if (jobRewardDto == null) {
             return;
@@ -54,6 +63,8 @@ public class JobListener implements Listener {
 
         addExperience(player, jobRewardDto);
         economy.depositPlayer(player, jobRewardDto.money().doubleValue());
+
+        // TODO: Show bar, should schedule to close after 10 seconds (that logic should be in JobExperienceBar
     }
 
     private void addExperience(Player player, JobRewardDto jobRewardDto) {
@@ -84,5 +95,17 @@ public class JobListener implements Listener {
                 TextDecoration.BOLD
             )
         );
+    }
+
+    private JobExperienceBar getOrCreateJobExperienceBar(UUID playerUUID) {
+        JobExperienceBar jobExperienceBar = jobService.getPlayerJobExperienceBar(playerUUID);
+        if (jobExperienceBar != null) {
+            return jobExperienceBar;
+        }
+
+        BossBar bar = bukkitWrapper.createBossBar("", BarColor.BLUE, BarStyle.SOLID);
+        JobExperienceBar newBar = new JobExperienceBar(bar);
+        jobService.addPlayerJobExperienceBar(playerUUID, newBar);
+        return newBar;
     }
 }

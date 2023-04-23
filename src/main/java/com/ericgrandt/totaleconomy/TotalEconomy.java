@@ -30,6 +30,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class TotalEconomy extends JavaPlugin implements Listener {
     private final FileConfiguration config = getConfig();
     private final Logger logger = Logger.getLogger("Minecraft");
+    private final BukkitWrapper bukkitWrapper = new BukkitWrapper();
 
     private final Map<String, Boolean> enabledFeatures = new HashMap<>();
 
@@ -83,7 +84,7 @@ public class TotalEconomy extends JavaPlugin implements Listener {
     private void registerCommands() {
         Objects.requireNonNull(this.getCommand("balance")).setExecutor(new BalanceCommand(economy));
         Objects.requireNonNull(this.getCommand("pay")).setExecutor(
-            new PayCommand(logger, new BukkitWrapper(), economy, balanceService)
+            new PayCommand(logger, bukkitWrapper, economy, balanceService)
         );
 
         if (enabledFeatures.get("jobs")) {
@@ -97,7 +98,7 @@ public class TotalEconomy extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(new PlayerListener(economy, jobService), this);
 
         if (enabledFeatures.get("jobs")) {
-            getServer().getPluginManager().registerEvents(new JobListener(economy, jobService), this);
+            getServer().getPluginManager().registerEvents(new JobListener(economy, jobService, bukkitWrapper), this);
         }
     }
 

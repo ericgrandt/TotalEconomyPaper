@@ -20,8 +20,10 @@ import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.impl.JobExperienceBar;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import com.ericgrandt.totaleconomy.services.JobService;
+import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
 import com.zaxxer.hikari.HikariDataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -47,6 +49,9 @@ public class JobListenerTest {
     @Mock
     private JobService jobServiceMock;
 
+    @Mock
+    private JobExperienceBar jobExperienceBarMock;
+
     @Test
     @Tag("Unit")
     public void actionHandler_WithJobRewardFound_ShouldAddRewards() {
@@ -57,10 +62,10 @@ public class JobListenerTest {
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
         when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
 
-        JobListener sut = new JobListener(economyMock, jobServiceMock);
+        JobListener sut = new JobListener(economyMock, jobServiceMock, mock(BukkitWrapper.class));
 
         // Act
-        sut.actionHandler("stone", mock(Player.class), "action");
+        sut.actionHandler("stone", mock(Player.class), "action", jobExperienceBarMock);
 
         // Assert
         verify(economyMock, times(1)).depositPlayer(any(Player.class), anyDouble());
@@ -72,10 +77,10 @@ public class JobListenerTest {
         // Arrange
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(null);
 
-        JobListener sut = new JobListener(economyMock, jobServiceMock);
+        JobListener sut = new JobListener(economyMock, jobServiceMock, mock(BukkitWrapper.class));
 
         // Act
-        sut.actionHandler("stone", mock(Player.class), "break");
+        sut.actionHandler("stone", mock(Player.class), "break", jobExperienceBarMock);
 
         // Assert
         verify(economyMock, times(0)).depositPlayer(any(Player.class), anyDouble());
@@ -92,10 +97,10 @@ public class JobListenerTest {
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
         when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
 
-        JobListener sut = new JobListener(economyMock, jobServiceMock);
+        JobListener sut = new JobListener(economyMock, jobServiceMock, mock(BukkitWrapper.class));
 
         // Act
-        sut.actionHandler("stone", playerMock, "kill");
+        sut.actionHandler("stone", playerMock, "kill", jobExperienceBarMock);
 
         // Assert
         verify(playerMock, times(1)).sendMessage(any(Component.class));
@@ -112,10 +117,10 @@ public class JobListenerTest {
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
         when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
 
-        JobListener sut = new JobListener(economyMock, jobServiceMock);
+        JobListener sut = new JobListener(economyMock, jobServiceMock, mock(BukkitWrapper.class));
 
         // Act
-        sut.actionHandler("stone", playerMock, "break");
+        sut.actionHandler("stone", playerMock, "break", jobExperienceBarMock);
 
         // Assert
         verify(playerMock, times(0)).sendMessage(any(Component.class));
@@ -154,10 +159,10 @@ public class JobListenerTest {
             balanceData
         );
 
-        JobListener sut = new JobListener(economy, jobService);
+        JobListener sut = new JobListener(economy, jobService, mock(BukkitWrapper.class));
 
         // Act
-        sut.actionHandler("coal_ore", playerMock, "break");
+        sut.actionHandler("coal_ore", playerMock, "break", jobExperienceBarMock);
 
         // Assert
         BalanceDto actualBalance = TestUtils.getBalanceForAccountId(playerId, 1);
@@ -215,10 +220,10 @@ public class JobListenerTest {
             balanceData
         );
 
-        JobListener sut = new JobListener(economy, jobService);
+        JobListener sut = new JobListener(economy, jobService, mock(BukkitWrapper.class));
 
         // Act
-        sut.actionHandler("chicken", playerMock, "kill");
+        sut.actionHandler("chicken", playerMock, "kill", jobExperienceBarMock);
 
         // Assert
         BalanceDto actualBalance = TestUtils.getBalanceForAccountId(playerId, 1);

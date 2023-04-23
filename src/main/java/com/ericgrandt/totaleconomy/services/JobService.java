@@ -5,10 +5,12 @@ import com.ericgrandt.totaleconomy.data.dto.JobActionDto;
 import com.ericgrandt.totaleconomy.data.dto.JobDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
+import com.ericgrandt.totaleconomy.impl.JobExperienceBar;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import com.ericgrandt.totaleconomy.models.JobExperience;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,6 +20,7 @@ import java.util.logging.Logger;
 public class JobService {
     private final Logger logger;
     private final JobData jobData;
+    private final HashMap<UUID, JobExperienceBar> playerJobExperienceBars = new HashMap<>();
 
     public JobService(Logger logger, JobData jobData) {
         this.logger = logger;
@@ -114,6 +117,14 @@ public class JobService {
         // Inverse of: 49 * (cur_level ^ 2)
         int level = (int) Math.ceil(Math.sqrt(experience) / 7);
         return Math.max(level, 1);
+    }
+
+    public JobExperienceBar getPlayerJobExperienceBar(UUID playerUUID) {
+        return playerJobExperienceBars.get(playerUUID);
+    }
+
+    public void addPlayerJobExperienceBar(UUID playerUUID, JobExperienceBar experienceBar) {
+        playerJobExperienceBars.put(playerUUID, experienceBar);
     }
 
     private int calculateExperienceForNextLevel(int curLevel) {
