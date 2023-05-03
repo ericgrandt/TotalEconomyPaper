@@ -1,6 +1,7 @@
 package com.ericgrandt.totaleconomy.listeners;
 
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.impl.JobExperienceBar;
 import com.ericgrandt.totaleconomy.services.JobService;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.entity.Player;
@@ -25,6 +26,8 @@ public class PlayerListener implements Listener {
     }
 
     public void onPlayerJoinHandler(Player player) {
+        jobService.addPlayerJobExperienceBar(player.getUniqueId(), new JobExperienceBar(player));
+
         if (economy.hasAccount(player)) {
             return;
         }

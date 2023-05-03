@@ -36,7 +36,7 @@ public class JobListener implements Listener {
     public void onBreakAction(BlockBreakEvent event) {
         Player player = event.getPlayer();
         String blockName = event.getBlock().getType().name().toLowerCase();
-        JobExperienceBar jobExperienceBar = getOrCreateJobExperienceBar(player.getUniqueId());
+        JobExperienceBar jobExperienceBar = getOrCreateJobExperienceBar(player);
 
         CompletableFuture.runAsync(() -> actionHandler(blockName, player, "break", jobExperienceBar));
     }
@@ -50,7 +50,7 @@ public class JobListener implements Listener {
         }
 
         String entityName = entity.getType().name().toLowerCase();
-        JobExperienceBar jobExperienceBar = getOrCreateJobExperienceBar(player.getUniqueId());
+        JobExperienceBar jobExperienceBar = getOrCreateJobExperienceBar(player);
 
         CompletableFuture.runAsync(() -> actionHandler(entityName, player, "kill", jobExperienceBar));
     }
@@ -64,7 +64,7 @@ public class JobListener implements Listener {
         addExperience(player, jobRewardDto);
         economy.depositPlayer(player, jobRewardDto.money().doubleValue());
 
-        // TODO: Show bar, should schedule to close after 10 seconds (that logic should be in JobExperienceBar
+        jobExperienceBar.show();
     }
 
     private void addExperience(Player player, JobRewardDto jobRewardDto) {
@@ -97,15 +97,14 @@ public class JobListener implements Listener {
         );
     }
 
-    private JobExperienceBar getOrCreateJobExperienceBar(UUID playerUUID) {
-        JobExperienceBar jobExperienceBar = jobService.getPlayerJobExperienceBar(playerUUID);
+    private JobExperienceBar getOrCreateJobExperienceBar(Player player) {
+        JobExperienceBar jobExperienceBar = jobService.getPlayerJobExperienceBar(player.getUniqueId());
         if (jobExperienceBar != null) {
             return jobExperienceBar;
         }
 
-        BossBar bar = bukkitWrapper.createBossBar("", BarColor.BLUE, BarStyle.SOLID);
-        JobExperienceBar newBar = new JobExperienceBar(bar);
-        jobService.addPlayerJobExperienceBar(playerUUID, newBar);
+        JobExperienceBar newBar = new JobExperienceBar(player);
+        jobService.addPlayerJobExperienceBar(player.getUniqueId(), newBar);
         return newBar;
     }
 }
