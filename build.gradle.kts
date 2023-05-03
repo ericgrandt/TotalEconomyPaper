@@ -35,7 +35,7 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(19))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
 tasks.getByName<Test>("test") {
