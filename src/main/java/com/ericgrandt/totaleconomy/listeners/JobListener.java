@@ -60,22 +60,24 @@ public class JobListener implements Listener {
     }
 
     private void addExperience(Player player, JobRewardDto jobRewardDto, JobExperienceBar jobExperienceBar) {
+        int experienceGain = jobRewardDto.experience();
+
         AddExperienceResult addExperienceResult = jobService.addExperience(
             player.getUniqueId(),
             UUID.fromString(jobRewardDto.jobId()),
-            jobRewardDto.experience()
+            experienceGain
         );
         if (addExperienceResult.leveledUp()) {
             player.sendMessage(getLevelUpMessage(addExperienceResult));
         }
 
-        // TODO: Set message for jobExperienceBar. Create new function to handle this.
+        jobExperienceBar.setExperienceBarName(addExperienceResult.jobExperience(), experienceGain);
         jobExperienceBar.show();
     }
 
     private Component getLevelUpMessage(AddExperienceResult addExperienceResult) {
         return Component.text(
-            addExperienceResult.jobName(),
+            addExperienceResult.jobExperience().jobName(),
             TextColor.fromHexString("#DADFE1"),
             TextDecoration.BOLD
         ).append(
@@ -85,7 +87,7 @@ public class JobListener implements Listener {
             ).decoration(TextDecoration.BOLD, false)
         ).append(
             Component.text(
-                String.format(" %s", addExperienceResult.level()),
+                String.format(" %s", addExperienceResult.jobExperience().level()),
                 TextColor.fromHexString("#DADFE1"),
                 TextDecoration.BOLD
             )

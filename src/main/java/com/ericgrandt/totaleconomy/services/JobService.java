@@ -98,7 +98,7 @@ public class JobService {
         try {
             Optional<JobExperienceDto> jobExperienceDtoOptional = getJobExperienceDto(accountId, jobId);
             if (jobExperienceDtoOptional.isEmpty()) {
-                return new AddExperienceResult("", -1, false);
+                return new AddExperienceResult(null, false);
             }
 
             JobExperienceDto jobExperienceDto = jobExperienceDtoOptional.get();
@@ -110,7 +110,14 @@ public class JobService {
 
             jobData.updateExperienceForJob(accountId, jobId, newExperience);
 
-            return new AddExperienceResult(jobDto.jobName(), newLevel, newLevel > currentLevel);
+            JobExperience jobExperience = new JobExperience(
+                jobDto.jobName(),
+                newExperience,
+                calculateExperienceForNextLevel(newLevel),
+                newLevel
+            );
+
+            return new AddExperienceResult(jobExperience, newLevel > currentLevel);
         } catch (SQLException e) {
             logger.log(
                 Level.SEVERE,
@@ -122,7 +129,7 @@ public class JobService {
                 ),
                 e
             );
-            return new AddExperienceResult("", -1, false);
+            return new AddExperienceResult(null, false);
         }
     }
 
