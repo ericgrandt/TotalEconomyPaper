@@ -1,26 +1,36 @@
 package com.ericgrandt.totaleconomy.impl;
 
-import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
-import net.kyori.adventure.audience.Audience;
-import org.bukkit.boss.BossBar;
+import com.ericgrandt.totaleconomy.models.JobExperience;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 public class JobExperienceBarTest {
-    private final BukkitWrapper bukkitWrapper = new BukkitWrapper();
-
     @Test
     @Tag("Unit")
-    public void show_ShouldMakeBarVisible() {
+    public void setExperienceBarName_ShouldChangeNameOfBossBar() {
         // Arrange
+        JobExperience jobExperience = new JobExperience(
+            "Miner",
+            50,
+            100,
+            1
+        );
+
         Player player = mock(Player.class);
-        Audience blah = player;
+        JobExperienceBar sut = new JobExperienceBar(player, null);
 
         // Act
+        sut.setExperienceBarName(jobExperience, 25);
+
+        Component actual = sut.getBossBar().name();
+        Component expected = Component.text("Miner [LVL 1] [50/100 EXP] | +25 EXP");
 
         // Assert
+        assertEquals(expected, actual);
     }
 }

@@ -1,6 +1,7 @@
 package com.ericgrandt.totaleconomy.impl;
 
 import com.ericgrandt.totaleconomy.TotalEconomy;
+import com.ericgrandt.totaleconomy.models.JobExperience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
@@ -20,7 +21,6 @@ public class JobExperienceBar {
         this.bossBar = BossBar.bossBar(Component.empty(), 0.0f, BossBar.Color.BLUE, BossBar.Overlay.PROGRESS);
     }
 
-    // TODO: Test. Mock startHideTask() for simplicity
     public void show() {
         if (this.task != null) {
             this.task.cancel();
@@ -35,7 +35,26 @@ public class JobExperienceBar {
         player.hideBossBar(bossBar);
     }
 
-    public void startHideTask() {
+    public void setExperienceBarName(JobExperience jobExperience, int expGain) {
+        this.bossBar.name(
+            Component.text(
+                String.format(
+                    "%s [LVL %s] [%s/%s EXP] | +%s EXP",
+                    jobExperience.jobName(),
+                    jobExperience.level(),
+                    jobExperience.experience(),
+                    jobExperience.experienceToNext(),
+                    expGain
+                )
+            )
+        );
+    }
+
+    public BossBar getBossBar() {
+        return this.bossBar;
+    }
+
+    private void startHideTask() {
         this.task = new BukkitRunnable() {
             @Override
             public void run() {
