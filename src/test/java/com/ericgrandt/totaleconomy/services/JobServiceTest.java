@@ -156,6 +156,35 @@ public class JobServiceTest {
 
     @Test
     @Tag("Unit")
+    public void getExperienceForJob_WithSuccess_ShouldReturnJobExperience() throws SQLException {
+        // Arrange
+        UUID accountId = UUID.randomUUID();
+        UUID jobId = UUID.randomUUID();
+        JobExperienceDto jobExperienceDto = new JobExperienceDto(
+            "id",
+            accountId.toString(),
+            jobId.toString(),
+            10
+        );
+
+        JobData jobDataMock = mock(JobData.class);
+        when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(jobExperienceDto);
+        when(jobDataMock.getJob(jobId)).thenReturn(
+            new JobDto(jobId.toString(), "jobName")
+        );
+
+        JobService sut = new JobService(loggerMock, jobDataMock);
+
+        // Act
+        JobExperience actual = sut.getExperienceForJob(accountId, jobId);
+        JobExperience expected = new JobExperience("jobName", 10, 50, 1);
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
     public void getExperienceForAllJobs_WithSuccess_ShouldReturnListOfJobExperienceRecords() throws SQLException {
         // Arrange
         UUID accountId = UUID.randomUUID();

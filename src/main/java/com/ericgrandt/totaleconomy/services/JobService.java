@@ -45,6 +45,19 @@ public class JobService {
         }
     }
 
+    public JobExperience getExperienceForJob(UUID accountId, UUID jobId) throws SQLException {
+        JobExperienceDto jobExperienceDto = jobData.getExperienceForJob(accountId, jobId);
+        JobDto jobDto = jobData.getJob(jobId);
+        int curLevel = calculateLevelFromExperience(jobExperienceDto.experience());
+
+        return new JobExperience(
+            jobDto.jobName(),
+            jobExperienceDto.experience(),
+            calculateExperienceForNextLevel(curLevel),
+            curLevel
+        );
+    }
+
     public List<JobExperience> getExperienceForAllJobs(UUID accountId) throws SQLException {
         List<JobExperienceDto> jobExperienceDtos = jobData.getExperienceForAllJobs(accountId);
         List<JobExperience> jobExperienceList = new ArrayList<>();
