@@ -40,6 +40,8 @@ public class TotalEconomy extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
+
         setFeatureEnabledStatus();
 
         Database database = new Database(
@@ -95,10 +97,10 @@ public class TotalEconomy extends JavaPlugin implements Listener {
     }
 
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new PlayerListener(economy, jobService), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(economy, jobService, this), this);
 
         if (enabledFeatures.get("jobs")) {
-            getServer().getPluginManager().registerEvents(new JobListener(economy, jobService, bukkitWrapper), this);
+            getServer().getPluginManager().registerEvents(new JobListener(economy, jobService), this);
         }
     }
 

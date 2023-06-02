@@ -46,7 +46,7 @@ public class PlayerListenerTest {
         JobService jobServiceMock = mock(JobService.class);
         when(economyMock.hasAccount(playerMock)).thenReturn(true);
 
-        PlayerListener sut = new PlayerListener(economyMock, jobServiceMock);
+        PlayerListener sut = new PlayerListener(economyMock, jobServiceMock, null);
 
         // Act
         sut.onPlayerJoinHandler(playerMock);
@@ -64,7 +64,7 @@ public class PlayerListenerTest {
         JobService jobServiceMock = mock(JobService.class);
         when(economyMock.hasAccount(playerMock)).thenReturn(false);
 
-        PlayerListener sut = new PlayerListener(economyMock, jobServiceMock);
+        PlayerListener sut = new PlayerListener(economyMock, jobServiceMock, null);
 
         // Act
         sut.onPlayerJoinHandler(playerMock);
@@ -95,7 +95,7 @@ public class PlayerListenerTest {
         JobData jobData = new JobData(databaseMock);
         EconomyImpl economy = new EconomyImpl(loggerMock, true, currencyDto, accountData, balanceDataMock);
         JobService jobServiceMock = new JobService(loggerMock, jobData);
-        PlayerListener sut = new PlayerListener(economy, jobServiceMock);
+        PlayerListener sut = new PlayerListener(economy, jobServiceMock, null);
 
         // Act
         sut.onPlayerJoinHandler(playerMock);

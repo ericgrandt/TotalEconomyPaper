@@ -23,7 +23,6 @@ import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.impl.JobExperienceBar;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
 import com.ericgrandt.totaleconomy.services.JobService;
-import com.ericgrandt.totaleconomy.wrappers.BukkitWrapper;
 import com.zaxxer.hikari.HikariDataSource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -62,7 +61,7 @@ public class JobListenerTest {
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
         when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
 
-        JobListener sut = new JobListener(economyMock, jobServiceMock, mock(BukkitWrapper.class));
+        JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
         sut.actionHandler("stone", mock(Player.class), "action", jobExperienceBarMock);
@@ -77,7 +76,7 @@ public class JobListenerTest {
         // Arrange
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(null);
 
-        JobListener sut = new JobListener(economyMock, jobServiceMock, mock(BukkitWrapper.class));
+        JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
         sut.actionHandler("stone", mock(Player.class), "break", jobExperienceBarMock);
@@ -97,7 +96,7 @@ public class JobListenerTest {
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
         when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
 
-        JobListener sut = new JobListener(economyMock, jobServiceMock, mock(BukkitWrapper.class));
+        JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
         sut.actionHandler("stone", playerMock, "kill", jobExperienceBarMock);
@@ -117,7 +116,7 @@ public class JobListenerTest {
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
         when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
 
-        JobListener sut = new JobListener(economyMock, jobServiceMock, mock(BukkitWrapper.class));
+        JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
         sut.actionHandler("stone", playerMock, "break", jobExperienceBarMock);
@@ -159,7 +158,7 @@ public class JobListenerTest {
             balanceData
         );
 
-        JobListener sut = new JobListener(economy, jobService, mock(BukkitWrapper.class));
+        JobListener sut = new JobListener(economy, jobService);
 
         // Act
         sut.actionHandler("coal_ore", playerMock, "break", jobExperienceBarMock);
@@ -220,7 +219,7 @@ public class JobListenerTest {
             balanceData
         );
 
-        JobListener sut = new JobListener(economy, jobService, mock(BukkitWrapper.class));
+        JobListener sut = new JobListener(economy, jobService);
 
         // Act
         sut.actionHandler("chicken", playerMock, "kill", jobExperienceBarMock);
