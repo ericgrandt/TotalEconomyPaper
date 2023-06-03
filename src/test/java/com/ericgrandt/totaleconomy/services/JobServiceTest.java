@@ -177,7 +177,7 @@ public class JobServiceTest {
 
         // Act
         JobExperience actual = sut.getExperienceForJob(accountId, jobId);
-        JobExperience expected = new JobExperience("jobName", 10, 50, 1);
+        JobExperience expected = new JobExperience("jobName", 10, 0, 50, 1);
 
         // Assert
         assertEquals(expected, actual);
@@ -205,7 +205,7 @@ public class JobServiceTest {
         // Act
         List<JobExperience> actual = sut.getExperienceForAllJobs(accountId);
         List<JobExperience> expected = List.of(
-            new JobExperience("jobName", 10, 50, 1)
+            new JobExperience("jobName", 10, 0, 50, 1)
         );
 
         // Assert
@@ -312,7 +312,7 @@ public class JobServiceTest {
         // Act
         AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
         AddExperienceResult expected = new AddExperienceResult(
-            new JobExperience(jobDto.jobName(), 11, 50, 1),
+            new JobExperience(jobDto.jobName(), 11, 0, 50, 1),
             false
         );
 
@@ -344,7 +344,7 @@ public class JobServiceTest {
         // Act
         AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
         AddExperienceResult expected = new AddExperienceResult(
-            new JobExperience(jobDto.jobName(), 110, 197, 2),
+            new JobExperience(jobDto.jobName(), 110, 50, 197, 2),
             true
         );
 

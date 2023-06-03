@@ -53,6 +53,7 @@ public class JobService {
         return new JobExperience(
             jobDto.jobName(),
             jobExperienceDto.experience(),
+            calculateCurrentLevelBaseExperience(curLevel),
             calculateExperienceForNextLevel(curLevel),
             curLevel
         );
@@ -70,6 +71,7 @@ public class JobService {
                 new JobExperience(
                     jobDto.jobName(),
                     jobExperienceDto.experience(),
+                    calculateCurrentLevelBaseExperience(curLevel),
                     calculateExperienceForNextLevel(curLevel),
                     curLevel
                 )
@@ -113,6 +115,7 @@ public class JobService {
             JobExperience jobExperience = new JobExperience(
                 jobDto.jobName(),
                 newExperience,
+                calculateCurrentLevelBaseExperience(newLevel),
                 calculateExperienceForNextLevel(newLevel),
                 newLevel
             );
@@ -149,6 +152,11 @@ public class JobService {
 
     private int calculateExperienceForNextLevel(int curLevel) {
         return (int) Math.ceil(49 * Math.pow(curLevel, 2)) + 1;
+    }
+
+    private int calculateCurrentLevelBaseExperience(int curLevel) {
+        int experience = (int) Math.ceil(49 * Math.pow(curLevel - 1, 2));
+        return experience > 0 ? experience + 1 : experience;
     }
 
     private Optional<JobExperienceDto> getJobExperienceDto(UUID accountId, UUID jobId) throws SQLException {

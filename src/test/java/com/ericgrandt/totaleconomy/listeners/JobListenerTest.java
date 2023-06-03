@@ -92,7 +92,7 @@ public class JobListenerTest {
         // Arrange
         JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
         AddExperienceResult addExperienceResult = new AddExperienceResult(
-            new JobExperience("jobName", 1, 1, 1),
+            new JobExperience("jobName", 1, 0, 1, 1),
             true
         );
 

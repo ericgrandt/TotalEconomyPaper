@@ -4,6 +4,7 @@ import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
 import com.ericgrandt.totaleconomy.impl.JobExperienceBar;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
+import com.ericgrandt.totaleconomy.models.JobExperience;
 import com.ericgrandt.totaleconomy.services.JobService;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +27,7 @@ public class JobListener implements Listener {
         this.jobService = jobService;
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBreakAction(BlockBreakEvent event) {
         Player player = event.getPlayer();
         String blockName = event.getBlock().getType().name().toLowerCase();
@@ -35,7 +36,7 @@ public class JobListener implements Listener {
         CompletableFuture.runAsync(() -> actionHandler(blockName, player, "break", jobExperienceBar));
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onKillAction(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
         Player player = entity.getKiller();
@@ -71,7 +72,9 @@ public class JobListener implements Listener {
             player.sendMessage(getLevelUpMessage(addExperienceResult));
         }
 
-        jobExperienceBar.setExperienceBarName(addExperienceResult.jobExperience(), experienceGain);
+        JobExperience jobExperience = addExperienceResult.jobExperience();
+        jobExperienceBar.setExperienceBarName(jobExperience, experienceGain);
+        jobExperienceBar.setProgress(jobExperience);
         jobExperienceBar.show();
     }
 

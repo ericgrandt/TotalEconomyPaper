@@ -17,6 +17,7 @@ public class JobExperienceBarTest {
         JobExperience jobExperience = new JobExperience(
             "Miner",
             50,
+            0,
             100,
             1
         );
@@ -28,7 +29,7 @@ public class JobExperienceBarTest {
         sut.setExperienceBarName(jobExperience, 25);
 
         Component actual = sut.getBossBar().name();
-        Component expected = Component.text("Miner [LVL 1] [50/100 EXP] | +25 EXP");
+        Component expected = Component.text("Miner [+25 EXP]");
 
         // Assert
         assertEquals(expected, actual);

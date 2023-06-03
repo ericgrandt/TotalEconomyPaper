@@ -39,15 +39,18 @@ public class JobExperienceBar {
         this.bossBar.name(
             Component.text(
                 String.format(
-                    "%s [LVL %s] [%s/%s EXP] | +%s EXP",
+                    "%s [+%s EXP]",
                     jobExperience.jobName(),
-                    jobExperience.level(),
-                    jobExperience.experience(),
-                    jobExperience.experienceToNext(),
                     expGain
                 )
             )
         );
+    }
+
+    public void setProgress(JobExperience jobExperience) {
+        float normalizedStart = jobExperience.experience() - jobExperience.levelBaseExperience();
+        float normalizedEnd = jobExperience.experienceToNext() - jobExperience.levelBaseExperience();
+        this.bossBar.progress(normalizedStart / normalizedEnd);
     }
 
     public BossBar getBossBar() {
