@@ -80,8 +80,8 @@ public class JobCommandTest {
         // Arrange
         UUID playerUuid = UUID.randomUUID();
         List<JobExperience> jobExperienceList = List.of(
-            new JobExperience("job1", 0, 10, 1),
-            new JobExperience("job2", 35, 50, 3)
+            new JobExperience("job1", 0, 0, 10, 1),
+            new JobExperience("job2", 35, 0, 50, 3)
         );
 
         Player playerMock = mock(Player.class);

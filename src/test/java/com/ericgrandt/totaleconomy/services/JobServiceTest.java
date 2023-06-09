@@ -156,6 +156,35 @@ public class JobServiceTest {
 
     @Test
     @Tag("Unit")
+    public void getExperienceForJob_WithSuccess_ShouldReturnJobExperience() throws SQLException {
+        // Arrange
+        UUID accountId = UUID.randomUUID();
+        UUID jobId = UUID.randomUUID();
+        JobExperienceDto jobExperienceDto = new JobExperienceDto(
+            "id",
+            accountId.toString(),
+            jobId.toString(),
+            10
+        );
+
+        JobData jobDataMock = mock(JobData.class);
+        when(jobDataMock.getExperienceForJob(accountId, jobId)).thenReturn(jobExperienceDto);
+        when(jobDataMock.getJob(jobId)).thenReturn(
+            new JobDto(jobId.toString(), "jobName")
+        );
+
+        JobService sut = new JobService(loggerMock, jobDataMock);
+
+        // Act
+        JobExperience actual = sut.getExperienceForJob(accountId, jobId);
+        JobExperience expected = new JobExperience("jobName", 10, 0, 50, 1);
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
     public void getExperienceForAllJobs_WithSuccess_ShouldReturnListOfJobExperienceRecords() throws SQLException {
         // Arrange
         UUID accountId = UUID.randomUUID();
@@ -176,7 +205,7 @@ public class JobServiceTest {
         // Act
         List<JobExperience> actual = sut.getExperienceForAllJobs(accountId);
         List<JobExperience> expected = List.of(
-            new JobExperience("jobName", 10, 50, 1)
+            new JobExperience("jobName", 10, 0, 50, 1)
         );
 
         // Assert
@@ -282,7 +311,10 @@ public class JobServiceTest {
 
         // Act
         AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
-        AddExperienceResult expected = new AddExperienceResult(jobDto.jobName(), 1, false);
+        AddExperienceResult expected = new AddExperienceResult(
+            new JobExperience(jobDto.jobName(), 11, 0, 50, 1),
+            false
+        );
 
         // Assert
         assertEquals(expected, actual);
@@ -311,7 +343,10 @@ public class JobServiceTest {
 
         // Act
         AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
-        AddExperienceResult expected = new AddExperienceResult(jobDto.jobName(), 2, true);
+        AddExperienceResult expected = new AddExperienceResult(
+            new JobExperience(jobDto.jobName(), 110, 50, 197, 2),
+            true
+        );
 
         // Assert
         assertEquals(expected, actual);
@@ -332,7 +367,10 @@ public class JobServiceTest {
 
         // Act
         AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
-        AddExperienceResult expected = new AddExperienceResult("", -1, false);
+        AddExperienceResult expected = new AddExperienceResult(
+            null,
+            false
+        );
 
         // Assert
         assertEquals(expected, actual);
@@ -408,7 +446,7 @@ public class JobServiceTest {
 
         // Act
         AddExperienceResult actual = sut.addExperience(accountId, jobId, experienceToAdd);
-        AddExperienceResult expected = new AddExperienceResult("", -1, false);
+        AddExperienceResult expected = new AddExperienceResult(null, false);
 
         // Assert
         assertEquals(expected, actual);
@@ -458,7 +496,7 @@ public class JobServiceTest {
 
     @Test
     @Tag("Unit")
-    public void calculateLevelFromExperience_WithExperienceOf0_ShouldReturnOne() {
+    public void calculateLevelFromExperience_WithExperienceOfZero_ShouldReturnOne() {
         // Arrange
         JobService sut = new JobService(loggerMock, mock(JobData.class));
 

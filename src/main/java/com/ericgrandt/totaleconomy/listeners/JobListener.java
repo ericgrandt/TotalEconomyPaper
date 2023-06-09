@@ -2,7 +2,9 @@ package com.ericgrandt.totaleconomy.listeners;
 
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.impl.JobExperienceBar;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
+import com.ericgrandt.totaleconomy.models.JobExperience;
 import com.ericgrandt.totaleconomy.services.JobService;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -25,15 +27,16 @@ public class JobListener implements Listener {
         this.jobService = jobService;
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBreakAction(BlockBreakEvent event) {
         Player player = event.getPlayer();
         String blockName = event.getBlock().getType().name().toLowerCase();
+        JobExperienceBar jobExperienceBar = jobService.getPlayerJobExperienceBar(player.getUniqueId());
 
-        CompletableFuture.runAsync(() -> actionHandler(blockName, player, "break"));
+        CompletableFuture.runAsync(() -> actionHandler(blockName, player, "break", jobExperienceBar));
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onKillAction(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
         Player player = entity.getKiller();
@@ -42,34 +45,42 @@ public class JobListener implements Listener {
         }
 
         String entityName = entity.getType().name().toLowerCase();
+        JobExperienceBar jobExperienceBar = jobService.getPlayerJobExperienceBar(player.getUniqueId());;
 
-        CompletableFuture.runAsync(() -> actionHandler(entityName, player, "kill"));
+        CompletableFuture.runAsync(() -> actionHandler(entityName, player, "kill", jobExperienceBar));
     }
 
-    public void actionHandler(String materialName, Player player, String action) {
+    public void actionHandler(String materialName, Player player, String action, JobExperienceBar jobExperienceBar) {
         JobRewardDto jobRewardDto = jobService.getJobReward(action, materialName);
         if (jobRewardDto == null) {
             return;
         }
 
-        addExperience(player, jobRewardDto);
+        addExperience(player, jobRewardDto, jobExperienceBar);
         economy.depositPlayer(player, jobRewardDto.money().doubleValue());
     }
 
-    private void addExperience(Player player, JobRewardDto jobRewardDto) {
+    private void addExperience(Player player, JobRewardDto jobRewardDto, JobExperienceBar jobExperienceBar) {
+        int experienceGain = jobRewardDto.experience();
+
         AddExperienceResult addExperienceResult = jobService.addExperience(
             player.getUniqueId(),
             UUID.fromString(jobRewardDto.jobId()),
-            jobRewardDto.experience()
+            experienceGain
         );
         if (addExperienceResult.leveledUp()) {
             player.sendMessage(getLevelUpMessage(addExperienceResult));
         }
+
+        JobExperience jobExperience = addExperienceResult.jobExperience();
+        jobExperienceBar.setExperienceBarName(jobExperience, experienceGain);
+        jobExperienceBar.setProgress(jobExperience);
+        jobExperienceBar.show();
     }
 
     private Component getLevelUpMessage(AddExperienceResult addExperienceResult) {
         return Component.text(
-            addExperienceResult.jobName(),
+            addExperienceResult.jobExperience().jobName(),
             TextColor.fromHexString("#DADFE1"),
             TextDecoration.BOLD
         ).append(
@@ -79,7 +90,7 @@ public class JobListener implements Listener {
             ).decoration(TextDecoration.BOLD, false)
         ).append(
             Component.text(
-                String.format(" %s", addExperienceResult.level()),
+                String.format(" %s", addExperienceResult.jobExperience().level()),
                 TextColor.fromHexString("#DADFE1"),
                 TextDecoration.BOLD
             )

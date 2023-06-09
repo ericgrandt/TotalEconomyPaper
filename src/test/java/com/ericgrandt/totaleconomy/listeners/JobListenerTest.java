@@ -20,7 +20,9 @@ import com.ericgrandt.totaleconomy.data.dto.CurrencyDto;
 import com.ericgrandt.totaleconomy.data.dto.JobExperienceDto;
 import com.ericgrandt.totaleconomy.data.dto.JobRewardDto;
 import com.ericgrandt.totaleconomy.impl.EconomyImpl;
+import com.ericgrandt.totaleconomy.impl.JobExperienceBar;
 import com.ericgrandt.totaleconomy.models.AddExperienceResult;
+import com.ericgrandt.totaleconomy.models.JobExperience;
 import com.ericgrandt.totaleconomy.services.JobService;
 import com.zaxxer.hikari.HikariDataSource;
 import java.math.BigDecimal;
@@ -47,12 +49,15 @@ public class JobListenerTest {
     @Mock
     private JobService jobServiceMock;
 
+    @Mock
+    private JobExperienceBar jobExperienceBarMock;
+
     @Test
     @Tag("Unit")
     public void actionHandler_WithJobRewardFound_ShouldAddRewards() {
         // Arrange
         JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
-        AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
+        AddExperienceResult addExperienceResult = new AddExperienceResult(null, false);
 
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
         when(jobServiceMock.addExperience(any(), any(), anyInt())).thenReturn(addExperienceResult);
@@ -60,7 +65,7 @@ public class JobListenerTest {
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.actionHandler("stone", mock(Player.class), "action");
+        sut.actionHandler("stone", mock(Player.class), "action", jobExperienceBarMock);
 
         // Assert
         verify(economyMock, times(1)).depositPlayer(any(Player.class), anyDouble());
@@ -75,7 +80,7 @@ public class JobListenerTest {
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.actionHandler("stone", mock(Player.class), "break");
+        sut.actionHandler("stone", mock(Player.class), "break", jobExperienceBarMock);
 
         // Assert
         verify(economyMock, times(0)).depositPlayer(any(Player.class), anyDouble());
@@ -86,7 +91,10 @@ public class JobListenerTest {
     public void actionHandler_WithLevelUp_ShouldSendMessage() {
         // Arrange
         JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
-        AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, true);
+        AddExperienceResult addExperienceResult = new AddExperienceResult(
+            new JobExperience("jobName", 1, 0, 1, 1),
+            true
+        );
 
         Player playerMock = mock(Player.class);
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
@@ -95,7 +103,7 @@ public class JobListenerTest {
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.actionHandler("stone", playerMock, "kill");
+        sut.actionHandler("stone", playerMock, "kill", jobExperienceBarMock);
 
         // Assert
         verify(playerMock, times(1)).sendMessage(any(Component.class));
@@ -106,7 +114,7 @@ public class JobListenerTest {
     public void actionHandler_WithNoLevelUp_ShouldNotSendMessage() {
         // Arrange
         JobRewardDto jobRewardDto = new JobRewardDto("", UUID.randomUUID().toString(), "", 1, "", BigDecimal.TEN, 1);
-        AddExperienceResult addExperienceResult = new AddExperienceResult("", 1, false);
+        AddExperienceResult addExperienceResult = new AddExperienceResult(null, false);
 
         Player playerMock = mock(Player.class);
         when(jobServiceMock.getJobReward(anyString(), anyString())).thenReturn(jobRewardDto);
@@ -115,7 +123,7 @@ public class JobListenerTest {
         JobListener sut = new JobListener(economyMock, jobServiceMock);
 
         // Act
-        sut.actionHandler("stone", playerMock, "break");
+        sut.actionHandler("stone", playerMock, "break", jobExperienceBarMock);
 
         // Assert
         verify(playerMock, times(0)).sendMessage(any(Component.class));
@@ -157,7 +165,7 @@ public class JobListenerTest {
         JobListener sut = new JobListener(economy, jobService);
 
         // Act
-        sut.actionHandler("coal_ore", playerMock, "break");
+        sut.actionHandler("coal_ore", playerMock, "break", jobExperienceBarMock);
 
         // Assert
         BalanceDto actualBalance = TestUtils.getBalanceForAccountId(playerId, 1);
@@ -218,7 +226,7 @@ public class JobListenerTest {
         JobListener sut = new JobListener(economy, jobService);
 
         // Act
-        sut.actionHandler("chicken", playerMock, "kill");
+        sut.actionHandler("chicken", playerMock, "kill", jobExperienceBarMock);
 
         // Assert
         BalanceDto actualBalance = TestUtils.getBalanceForAccountId(playerId, 1);
