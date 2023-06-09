@@ -34,4 +34,79 @@ public class JobExperienceBarTest {
         // Assert
         assertEquals(expected, actual);
     }
+
+    @Test
+    @Tag("Unit")
+    public void setProgress_WithBaseLevelExperience_ShouldSetProgressToZero() {
+        // Arrange
+        JobExperience jobExperience = new JobExperience(
+            "Miner",
+            50,
+            50,
+            100,
+            2
+        );
+
+        Player player = mock(Player.class);
+        JobExperienceBar sut = new JobExperienceBar(player, null);
+
+        // Act
+        sut.setProgress(jobExperience);
+
+        float actual = sut.getBossBar().progress();
+        float expected = 0.0f;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void setProgress_WithHalfwayToNextLevel_ShouldSetProgressToOneHalf() {
+        // Arrange
+        JobExperience jobExperience = new JobExperience(
+            "Miner",
+            75,
+            50,
+            100,
+            2
+        );
+
+        Player player = mock(Player.class);
+        JobExperienceBar sut = new JobExperienceBar(player, null);
+
+        // Act
+        sut.setProgress(jobExperience);
+
+        float actual = sut.getBossBar().progress();
+        float expected = 0.5f;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @Tag("Unit")
+    public void setProgress_WithExpToNextLlevel_ShouldSetProgressToOne() {
+        // Arrange
+        JobExperience jobExperience = new JobExperience(
+            "Miner",
+            100,
+            50,
+            100,
+            2
+        );
+
+        Player player = mock(Player.class);
+        JobExperienceBar sut = new JobExperienceBar(player, null);
+
+        // Act
+        sut.setProgress(jobExperience);
+
+        float actual = sut.getBossBar().progress();
+        float expected = 1f;
+
+        // Assert
+        assertEquals(expected, actual);
+    }
 }
