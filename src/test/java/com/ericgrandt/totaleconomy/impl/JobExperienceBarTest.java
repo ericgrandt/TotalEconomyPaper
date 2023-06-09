@@ -87,7 +87,7 @@ public class JobExperienceBarTest {
 
     @Test
     @Tag("Unit")
-    public void setProgress_WithExpToNextLlevel_ShouldSetProgressToOne() {
+    public void setProgress_WithExpToNextLevel_ShouldSetProgressToOne() {
         // Arrange
         JobExperience jobExperience = new JobExperience(
             "Miner",
