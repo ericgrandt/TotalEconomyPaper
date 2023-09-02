@@ -11,12 +11,15 @@ import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 
 public class JobListener implements Listener {
     private final EconomyImpl economy;
@@ -48,6 +51,21 @@ public class JobListener implements Listener {
         JobExperienceBar jobExperienceBar = jobService.getPlayerJobExperienceBar(player.getUniqueId());;
 
         CompletableFuture.runAsync(() -> actionHandler(entityName, player, "kill", jobExperienceBar));
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onFishAction(PlayerFishEvent event) {
+        Entity caughtEntity = event.getCaught();
+        if (caughtEntity == null) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+
+        String caughtItemName = ((Item) caughtEntity).getItemStack().getType().name().toLowerCase();
+        JobExperienceBar jobExperienceBar = jobService.getPlayerJobExperienceBar(player.getUniqueId());;
+
+        CompletableFuture.runAsync(() -> actionHandler(caughtItemName, player, "fish", jobExperienceBar));
     }
 
     public void actionHandler(String materialName, Player player, String action, JobExperienceBar jobExperienceBar) {

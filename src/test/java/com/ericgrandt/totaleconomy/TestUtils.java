@@ -118,10 +118,13 @@ public class TestUtils {
                 + "VALUES('fbc60ff9-d7e2-4704-9460-6edc2e7b6066', 'break');";
             String insertKillAction = "INSERT INTO te_job_action "
                 + "VALUES('cd626a9a-b91e-48d2-8198-0952501f37c5', 'kill');";
+            String insertFishAction = "INSERT INTO te_job_action "
+                + "VALUES('7ac7daf8-88ad-45d2-b093-077270e3da75', 'fish');";
 
             Statement statement = conn.createStatement();
             statement.execute(insertBreakAction);
             statement.execute(insertKillAction);
+            statement.execute(insertFishAction);
         }
     }
 
@@ -130,13 +133,17 @@ public class TestUtils {
             String insertBreakReward = "INSERT INTO te_job_reward "
                 + "VALUES('07ac5e1f-39ef-46a8-ad81-a4bc1facc090', 'a56a5842-1351-4b73-a021-bcd531260cd1', "
                 + "'fbc60ff9-d7e2-4704-9460-6edc2e7b6066', 1, 'coal_ore', 0.50, 1);";
-            String insertKillAward = "INSERT INTO te_job_reward "
+            String insertKillReward = "INSERT INTO te_job_reward "
                 + "VALUES('26ddbaab-3b3c-496c-b027-e2fe9b21ea5b', 'a56a5842-1351-4b73-a021-bcd531260cd1', "
                 + "'cd626a9a-b91e-48d2-8198-0952501f37c5', 1, 'chicken', 1.00, 5);";
+            String insertFishReward = "INSERT INTO te_job_reward "
+                + "VALUES('c7642455-b14d-4125-9c01-6978a2169d15', 'a56a5842-1351-4b73-a021-bcd531260cd1', "
+                + "'7ac7daf8-88ad-45d2-b093-077270e3da75', 1, 'salmon', 5.00, 20);";
 
             Statement statement = conn.createStatement();
             statement.execute(insertBreakReward);
-            statement.execute(insertKillAward);
+            statement.execute(insertKillReward);
+            statement.execute(insertFishReward);
         }
     }
 
