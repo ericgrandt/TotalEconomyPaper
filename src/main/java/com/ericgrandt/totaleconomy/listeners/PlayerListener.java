@@ -30,12 +30,12 @@ public class PlayerListener implements Listener {
 
     public void onPlayerJoinHandler(Player player) {
         jobService.addPlayerJobExperienceBar(player.getUniqueId(), new JobExperienceBar(player, plugin));
+        jobService.createJobExperienceForAccount(player.getUniqueId());
 
         if (economy.hasAccount(player)) {
             return;
         }
 
         economy.createPlayerAccount(player);
-        jobService.createJobExperienceForAccount(player.getUniqueId());
     }
 }
