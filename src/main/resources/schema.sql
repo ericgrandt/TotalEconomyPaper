@@ -175,3 +175,23 @@ VALUES (@hunter_job_id, @kill_action_id, 1, 'pig', 2.50, 10);
 
 INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
 VALUES (@hunter_job_id, @kill_action_id, 1, 'sheep', 2.50, 10);
+
+-- Insert fish action
+INSERT IGNORE INTO te_job_action(action_name) VALUES ('fish');
+SET @fish_action_id = (SELECT id FROM te_job_action WHERE action_name = 'fish');
+
+-- Insert Fisher job and rewards
+INSERT IGNORE INTO te_job(job_name) VALUES ('Fisher');
+SET @fisher_job_id = (SELECT id FROM te_job WHERE job_name = 'Fisher');
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@fisher_job_id, @fish_action_id, 1, 'cod', 5, 20);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@fisher_job_id, @fish_action_id, 1, 'salmon', 10, 40);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@fisher_job_id, @fish_action_id, 1, 'pufferfish', 20, 80);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@fisher_job_id, @fish_action_id, 1, 'tropical_fish', 40, 160);
