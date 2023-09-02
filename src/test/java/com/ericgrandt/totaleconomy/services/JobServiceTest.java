@@ -64,6 +64,33 @@ public class JobServiceTest {
 
     @Test
     @Tag("Unit")
+    public void getJobReward_WithNoJobActionFound_ShouldReturnNull() throws SQLException {
+        // Arrange
+        JobActionDto jobAction = new JobActionDto("id", "break");
+        JobRewardDto jobReward = new JobRewardDto(
+            "",
+            "",
+            "",
+            1,
+            "material",
+            BigDecimal.TEN,
+            1
+        );
+
+        JobData jobDataMock = mock(JobData.class);
+        when(jobDataMock.getJobActionByName("break")).thenReturn(null);
+
+        JobService sut = new JobService(loggerMock, jobDataMock);
+
+        // Act
+        JobRewardDto actual = sut.getJobReward("break", jobReward.material());
+
+        // Assert
+        assertNull(actual);
+    }
+
+    @Test
+    @Tag("Unit")
     public void getJobReward_WithNoRewardFound_ShouldReturnNull() throws SQLException {
         // Arrange
         JobActionDto jobAction = new JobActionDto("id", "break");

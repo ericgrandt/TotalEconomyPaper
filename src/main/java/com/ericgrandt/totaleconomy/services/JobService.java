@@ -30,6 +30,10 @@ public class JobService {
     public JobRewardDto getJobReward(String actionName, String materialName) {
         try {
             JobActionDto jobActionDto = jobData.getJobActionByName(actionName);
+            if (jobActionDto == null) {
+                return null;
+            }
+
             return jobData.getJobReward(jobActionDto.id(), materialName);
         } catch (SQLException e) {
             logger.log(
