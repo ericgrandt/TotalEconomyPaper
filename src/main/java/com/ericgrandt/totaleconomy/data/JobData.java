@@ -145,11 +145,11 @@ public class JobData {
     }
 
     public void createJobExperienceRows(UUID accountId) throws SQLException {
-        String createBalanceQuery = "INSERT IGNORE INTO te_job_experience(account_id, job_id) "
+        String createJobExperienceQuery = "INSERT IGNORE INTO te_job_experience(account_id, job_id) "
             + "SELECT ?, j.id FROM te_job j";
 
         try (Connection conn = database.getDataSource().getConnection()) {
-            try (PreparedStatement accountStmt = conn.prepareStatement(createBalanceQuery)) {
+            try (PreparedStatement accountStmt = conn.prepareStatement(createJobExperienceQuery)) {
                 accountStmt.setString(1, accountId.toString());
                 accountStmt.executeUpdate();
             }

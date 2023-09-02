@@ -61,7 +61,8 @@ public class JobCommand implements CommandExecutor {
                     "Jobs",
                     TextColor.fromHexString("#708090"),
                     TextDecoration.BOLD,
-                    TextDecoration.UNDERLINED)
+                    TextDecoration.UNDERLINED
+                )
             ).append(Component.newline())
             .append(Component.newline())
             .toBuilder();
