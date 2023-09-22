@@ -20,3 +20,4 @@ Each job reward must have a single action associated with it. They describe the 
 
 - `break`: action for breaking blocks
 - `kill`: action for killing entities
+- `fish`: action for catching fish and other items through fishing
