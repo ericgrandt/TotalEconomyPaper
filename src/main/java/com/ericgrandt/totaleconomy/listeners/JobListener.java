@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 
@@ -66,6 +67,15 @@ public class JobListener implements Listener {
         JobExperienceBar jobExperienceBar = jobService.getPlayerJobExperienceBar(player.getUniqueId());;
 
         CompletableFuture.runAsync(() -> actionHandler(caughtItemName, player, "fish", jobExperienceBar));
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlaceAction(BlockPlaceEvent event) {
+        Player player = event.getPlayer();
+        String blockName = event.getBlock().getType().name().toLowerCase();
+        JobExperienceBar jobExperienceBar = jobService.getPlayerJobExperienceBar(player.getUniqueId());
+
+        CompletableFuture.runAsync(() -> actionHandler(blockName, player, "place", jobExperienceBar));
     }
 
     public void actionHandler(String materialName, Player player, String action, JobExperienceBar jobExperienceBar) {
