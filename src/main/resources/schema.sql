@@ -195,3 +195,47 @@ VALUES (@fisher_job_id, @fish_action_id, 1, 'pufferfish', 20, 80);
 
 INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
 VALUES (@fisher_job_id, @fish_action_id, 1, 'tropical_fish', 40, 160);
+
+-- Insert place action
+INSERT IGNORE INTO te_job_action(action_name) VALUES ('place');
+SET @place_action_id = (SELECT id FROM te_job_action WHERE action_name = 'place');
+
+-- Insert Farmer job and rewards
+INSERT IGNORE INTO te_job(job_name) VALUES ('Farmer');
+SET @farmer_job_id = (SELECT id FROM te_job WHERE job_name = 'Farmer');
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @place_action_id, 1, 'wheat_seeds', 0.01, 1);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @place_action_id, 1, 'melon_seeds', 0.01, 1);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @place_action_id, 1, 'pumpkin_seeds', 0.01, 1);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @place_action_id, 1, 'beetroot_seeds', 0.01, 1);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @place_action_id, 1, 'carrots', 0.01, 1);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @place_action_id, 1, 'potatoes', 0.01, 1);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @break_action_id, 1, 'melon', 0.25, 5);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @break_action_id, 1, 'pumpkin', 0.25, 5);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @break_action_id, 1, 'wheat', 0.25, 5);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @break_action_id, 1, 'carrots', 0.25, 5);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @break_action_id, 1, 'beetroots', 0.25, 5);
+
+INSERT IGNORE INTO te_job_reward (job_id, job_action_id, currency_id, material, money, experience)
+VALUES (@farmer_job_id, @break_action_id, 1, 'potatoes', 0.25, 5);

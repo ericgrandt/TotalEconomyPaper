@@ -63,6 +63,6 @@ public class JobExperienceBar {
             public void run() {
                 hide();
             }
-        }.runTaskLater(this.plugin, 20L * 10L);
+        }.runTaskLater(this.plugin, 20L * 5L);
     }
 }

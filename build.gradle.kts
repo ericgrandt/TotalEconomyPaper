@@ -15,8 +15,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
-    testImplementation("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT")
+    testImplementation("io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT")
 
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
     testImplementation("com.github.MilkBowl:VaultAPI:1.7")
@@ -59,5 +59,5 @@ tasks.build {
 
 tasks.runServer {
     dependsOn(tasks.shadowJar)
-    minecraftVersion("1.20.1")
+    minecraftVersion("1.20.2")
 }

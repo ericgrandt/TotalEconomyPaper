@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
@@ -36,6 +37,11 @@ public class JobListener implements Listener {
         Player player = event.getPlayer();
         String blockName = event.getBlock().getType().name().toLowerCase();
         JobExperienceBar jobExperienceBar = jobService.getPlayerJobExperienceBar(player.getUniqueId());
+
+        // NOTE: This may affect more than crops, so it's worth coming back to this in the future if that's the case
+        if (event.getBlock().getBlockData() instanceof Ageable age && age.getAge() != age.getMaximumAge()) {
+            return;
+        }
 
         CompletableFuture.runAsync(() -> actionHandler(blockName, player, "break", jobExperienceBar));
     }
