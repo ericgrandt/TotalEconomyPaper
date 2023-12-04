@@ -38,7 +38,6 @@ public class JobListener implements Listener {
         String blockName = event.getBlock().getType().name().toLowerCase();
         JobExperienceBar jobExperienceBar = jobService.getPlayerJobExperienceBar(player.getUniqueId());
 
-        // NOTE: This may affect more than crops, so it's worth coming back to this in the future if that's the case
         if (event.getBlock().getBlockData() instanceof Ageable age && age.getAge() != age.getMaximumAge()) {
             return;
         }
