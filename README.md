@@ -1,3 +1,5 @@
+# MOVED TO https://github.com/ericgrandt/TotalEconomy
+
 # Total Economy
 
 Total Economy is a Minecraft plugin that aims to provide a full-fledged economy for your server. Each feature can be 
